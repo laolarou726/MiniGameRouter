@@ -1,0 +1,6 @@
+@MiniGameRouter_HostAddress = http://localhost:5011
+
+GET {{MiniGameRouter_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

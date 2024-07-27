@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter", "MiniGameRouter\MiniGameRouter.csproj", "{FA5245BB-DAAB-4D29-8D33-73A8230E6649}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.Shared", "MiniGameRouter.Shared\MiniGameRouter.Shared.csproj", "{489844CA-17F1-4049-B65F-98C32D0966AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA5245BB-DAAB-4D29-8D33-73A8230E6649}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA5245BB-DAAB-4D29-8D33-73A8230E6649}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA5245BB-DAAB-4D29-8D33-73A8230E6649}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA5245BB-DAAB-4D29-8D33-73A8230E6649}.Release|Any CPU.Build.0 = Release|Any CPU
+		{489844CA-17F1-4049-B65F-98C32D0966AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{489844CA-17F1-4049-B65F-98C32D0966AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{489844CA-17F1-4049-B65F-98C32D0966AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{489844CA-17F1-4049-B65F-98C32D0966AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
