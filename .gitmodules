@@ -1,0 +1,4 @@
+[submodule "Hive.Framework"]
+	path = Hive.Framework
+	url = https://github.com/Corona-Studio/Hive.Framework.git
+	branch = data-sync
