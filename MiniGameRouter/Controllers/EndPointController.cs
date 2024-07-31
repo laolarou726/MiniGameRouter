@@ -228,9 +228,11 @@ public sealed class EndPointController : Controller
 
         if (found == null) return NotFound();
 
-        found.ServiceName = model.ServiceName;
+        if (!string.IsNullOrEmpty(model.ServiceName))
+            found.ServiceName = model.ServiceName;
+        if (!string.IsNullOrEmpty(model.TargetEndPoint))
+            found.TargetEndPoint = model.TargetEndPoint;
         found.Weight = model.Weight;
-        found.TargetEndPoint = model.TargetEndPoint;
         found.TimeoutInMilliseconds = model.TimeoutInMilliseconds;
         
         var record = new EndPointRecord(
