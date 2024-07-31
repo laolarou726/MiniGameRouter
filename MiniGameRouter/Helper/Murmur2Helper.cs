@@ -2,13 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace MiniGameRouter.Helper;
 
-public class MurmurHash2Helper
+public static class Murmur2Helper
 {
-    public static uint Hash(byte[] data)
-    {
-        return Hash(data, 0xc58f1a7b);
-    }
-
     private const uint M = 0x5bd1e995;
     private const int R = 24;
 
@@ -20,7 +15,7 @@ public class MurmurHash2Helper
         [FieldOffset(0)] public uint[] UInts;
     }
 
-    public static uint Hash(byte[] data, uint seed)
+    public static uint Hash(byte[] data, uint seed = 0xc58f1a7b)
     {
         var length = data.Length;
         if (length == 0)

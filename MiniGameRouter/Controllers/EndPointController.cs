@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MiniGameRouter.Helper;
 using MiniGameRouter.Interfaces;
 using MiniGameRouter.Models;
@@ -15,6 +14,8 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class EndPointController : Controller
 {
+    private readonly bool _enforceHealthy;
+    
     private readonly EndPointMappingContext _endPointMappingContext;
     private readonly HealthCheckService _healthCheckService;
     private readonly NodeWeightedRouteService _weightedRouteService;
@@ -23,6 +24,7 @@ public sealed class EndPointController : Controller
     private readonly ILogger _logger;
     
     public EndPointController(
+        IConfiguration configuration,
         EndPointMappingContext endPointMappingContext,
         HealthCheckService healthCheckService,
         NodeWeightedRouteService weightedRouteService,
@@ -30,6 +32,8 @@ public sealed class EndPointController : Controller
         IDistributedCache cache,
         ILogger<EndPointController> logger)
     {
+        _enforceHealthy = configuration.GetValue<bool>("Routing:EnforceHealthy");
+        
         _endPointMappingContext = endPointMappingContext;
         _healthCheckService = healthCheckService;
         _weightedRouteService = weightedRouteService;
@@ -52,6 +56,7 @@ public sealed class EndPointController : Controller
                 e.Weight ?? 0,
                 e.TimeoutInMilliseconds,
                 e.IsValid))
+            .OrderBy(e => e.EndPoint)
             .ToListAsync();
         service.AddNodes(services);
 
@@ -60,6 +65,9 @@ public sealed class EndPointController : Controller
 
     private async Task<IActionResult> CheckHealthStatusAndReturn(EndPointRecord endPointRecord)
     {
+        if (!_enforceHealthy)
+            return Ok(endPointRecord);
+        
         var healthCheckKey = HealthCheckService.GetServiceName(endPointRecord);
         var healthStatus = await _cache.GetAsync<ServiceStatus?>(healthCheckKey);
 
@@ -174,7 +182,7 @@ public sealed class EndPointController : Controller
             var fetched = await PrefetchCacheAsync(
                 serviceName,
                 _hashRouteService,
-                s => s.Get(serviceName, null!));
+                s => s.Get(serviceName, modePairVal.HashKey));
 
             if (fetched == null) return NotFound();
 

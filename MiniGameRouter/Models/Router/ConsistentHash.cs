@@ -62,7 +62,7 @@ public class ConsistentHash<T> : IDisposable
         
         for (var i = 0; i < _replicate; i++)
         {
-            var hash = BetterHash(node.GetHashCode().ToString() + i);
+            var hash = BetterHash(node.ToString() + i);
             Circle[hash] = node;
         }
 
@@ -82,7 +82,7 @@ public class ConsistentHash<T> : IDisposable
         
         for (int i = 0; i < _replicate; i++)
         {
-            int hash = BetterHash(node.GetHashCode().ToString() + i);
+            int hash = BetterHash(node.ToString() + i);
             if (!Circle.Remove(hash))
             {
                 throw new Exception("can not remove a node that not added");
@@ -159,7 +159,7 @@ public class ConsistentHash<T> : IDisposable
     /// <returns>hash值</returns>
     public static int BetterHash(string key)
     {
-        var hash = MurmurHash2Helper.Hash(Encoding.ASCII.GetBytes(key));
+        var hash = Murmur2Helper.Hash(Encoding.ASCII.GetBytes(key));
         return (int)hash;
     }
 }
