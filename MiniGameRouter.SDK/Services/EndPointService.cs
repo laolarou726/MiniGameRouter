@@ -16,7 +16,7 @@ public class EndPointService : IEndPointService
     private readonly ServiceHealthManager _healthManager;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    
+
     public EndPointService(
         ServiceHealthManager healthManager,
         HttpClient httpClient,
@@ -27,7 +27,10 @@ public class EndPointService : IEndPointService
         _logger = logger;
     }
 
-    public Task<EndPointRecord?> GetEndPointAsync(Guid serviceId) => GetEndPointAsync(serviceId.ToString("N"));
+    public Task<EndPointRecord?> GetEndPointAsync(Guid serviceId)
+    {
+        return GetEndPointAsync(serviceId.ToString("N"));
+    }
 
     public async Task<EndPointRecord?> GetEndPointAsync(
         string serviceName,
@@ -35,7 +38,7 @@ public class EndPointService : IEndPointService
         string? hashKey = null)
     {
         const string url = "/EndPoint/get/";
-        
+
         if (routingMode == RoutingModel.Hashed && string.IsNullOrEmpty(hashKey))
             throw new Exception("Hash key is required for Hashed routing mode.");
 
@@ -43,7 +46,6 @@ public class EndPointService : IEndPointService
         var query = new NameValueCollection();
 
         if (routingMode != null)
-        {
             query["mode"] = routingMode switch
             {
                 RoutingModel.Random => "random",
@@ -51,20 +53,19 @@ public class EndPointService : IEndPointService
                 RoutingModel.Hashed => $"hash;{Uri.EscapeDataString(hashKey!)}",
                 _ => throw new ArgumentOutOfRangeException(nameof(routingMode), routingMode, null)
             };
-        }
 
         uriBuilder.Query = query.ToString();
-        
+
         var reqUri = uriBuilder.Uri;
         using var req = new HttpRequestMessage(HttpMethod.Get, reqUri);
         using var res = await _httpClient.SendAsync(req);
-        
+
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
             _logger.LogWarning("Service {ServiceName} not found.", serviceName);
             return null;
         }
-        
+
         res.EnsureSuccessStatusCode();
 
         var resModel = await res.Content.ReadFromJsonAsync<EndPointRecord>();
@@ -87,21 +88,21 @@ public class EndPointService : IEndPointService
             TimeoutInMilliseconds = timeoutInMilliseconds,
             Weight = weight
         };
-        
+
         await using var stream = RecycleMemoryStreamManagerHolder.Shared.GetStream();
         await JsonSerializer.SerializeAsync(stream, reqModel);
-        
+
         stream.Seek(0, SeekOrigin.Begin);
 
         using var req = new HttpRequestMessage(HttpMethod.Put, url);
         req.Content = new StreamContent(stream);
-        
+
         using var res = await _httpClient.SendAsync(req);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.BadRequest })
         {
             var error = await res.Content.ReadAsStringAsync();
-            
+
             _logger.LogError(
                 "Failed to create endpoint [{endPoint}]. Error: {error}",
                 reqModel,
@@ -109,11 +110,11 @@ public class EndPointService : IEndPointService
 
             return null;
         }
-        
+
         res.EnsureSuccessStatusCode();
-        
+
         var createdId = await res.Content.ReadFromJsonAsync<Guid>();
-        
+
         return createdId;
     }
 
@@ -122,43 +123,43 @@ public class EndPointService : IEndPointService
         EndPointMappingRequestModel reqModel)
     {
         var uri = $"/EndPoint/edit/{id:N}";
-        
+
         await using var stream = RecycleMemoryStreamManagerHolder.Shared.GetStream();
         await JsonSerializer.SerializeAsync(stream, reqModel);
-        
+
         stream.Seek(0, SeekOrigin.Begin);
-        
+
         using var req = new HttpRequestMessage(HttpMethod.Put, uri);
         req.Content = new StreamContent(stream);
-        
+
         using var res = await _httpClient.SendAsync(req);
-        
+
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
             _logger.LogWarning("EndPoint {Id} not found.", id);
             return false;
         }
-        
+
         res.EnsureSuccessStatusCode();
-        
+
         return true;
     }
 
     public async Task<bool> DeleteEndPointAsync(Guid id)
     {
         var uri = $"/EndPoint/delete/{id:N}";
-        
+
         using var req = new HttpRequestMessage(HttpMethod.Delete, uri);
         using var res = await _httpClient.SendAsync(req);
-        
+
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
             _logger.LogWarning("EndPoint {Id} not found.", id);
             return false;
         }
-        
+
         res.EnsureSuccessStatusCode();
-        
+
         return true;
     }
 }

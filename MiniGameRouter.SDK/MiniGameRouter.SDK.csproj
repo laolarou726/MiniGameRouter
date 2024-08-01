@@ -7,24 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.7"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Hive.Framework\Hive.Both.General\Hive.Both.General.csproj" />
+        <ProjectReference Include="..\Hive.Framework\Hive.Both.General\Hive.Both.General.csproj"/>
         <ProjectReference
-            Include="..\Hive.Framework\Hive.Codec.Abstractions\Hive.Codec.Abstractions.csproj" />
+                Include="..\Hive.Framework\Hive.Codec.Abstractions\Hive.Codec.Abstractions.csproj"/>
         <ProjectReference
-            Include="..\Hive.Framework\Hive.Codec.MemoryPack\Hive.Codec.MemoryPack.csproj" />
-        <ProjectReference Include="..\Hive.Framework\Hive.Codec.Shared\Hive.Codec.Shared.csproj" />
+                Include="..\Hive.Framework\Hive.Codec.MemoryPack\Hive.Codec.MemoryPack.csproj"/>
+        <ProjectReference Include="..\Hive.Framework\Hive.Codec.Shared\Hive.Codec.Shared.csproj"/>
         <ProjectReference
-            Include="..\Hive.Framework\Hive.Network.Abstractions\Hive.Network.Abstractions.csproj" />
-        <ProjectReference Include="..\Hive.Framework\Hive.Network.Shared\Hive.Network.Shared.csproj" />
-        <ProjectReference Include="..\Hive.Framework\Hive.Network.Tcp\Hive.Network.Tcp.csproj" />
-        <ProjectReference Include="..\MiniGameRouter.Shared\MiniGameRouter.Shared.csproj" />
+                Include="..\Hive.Framework\Hive.Network.Abstractions\Hive.Network.Abstractions.csproj"/>
+        <ProjectReference Include="..\Hive.Framework\Hive.Network.Shared\Hive.Network.Shared.csproj"/>
+        <ProjectReference Include="..\Hive.Framework\Hive.Network.Tcp\Hive.Network.Tcp.csproj"/>
+        <ProjectReference Include="..\MiniGameRouter.Shared\MiniGameRouter.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

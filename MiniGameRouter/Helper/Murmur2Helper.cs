@@ -7,14 +7,6 @@ public static class Murmur2Helper
     private const uint M = 0x5bd1e995;
     private const int R = 24;
 
-    [StructLayout(LayoutKind.Explicit)]
-    private struct ByteToUInt32Converter
-    {
-        [FieldOffset(0)] public byte[] Bytes;
-
-        [FieldOffset(0)] public uint[] UInts;
-    }
-
     public static uint Hash(byte[] data, uint seed = 0xc58f1a7b)
     {
         var length = data.Length;
@@ -41,19 +33,17 @@ public static class Murmur2Helper
         switch (length)
         {
             case 3:
-                h ^= (ushort)(data[currentIndex++] | data[currentIndex++] << 8);
+                h ^= (ushort)(data[currentIndex++] | (data[currentIndex++] << 8));
                 h ^= (uint)data[currentIndex] << 16;
                 h *= M;
                 break;
             case 2:
-                h ^= (ushort)(data[currentIndex++] | data[currentIndex] << 8);
+                h ^= (ushort)(data[currentIndex++] | (data[currentIndex] << 8));
                 h *= M;
                 break;
             case 1:
                 h ^= data[currentIndex];
                 h *= M;
-                break;
-            default:
                 break;
         }
 
@@ -65,5 +55,13 @@ public static class Murmur2Helper
         h ^= h >> 15;
 
         return h;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    private struct ByteToUInt32Converter
+    {
+        [FieldOffset(0)] public byte[] Bytes;
+
+        [FieldOffset(0)] public uint[] UInts;
     }
 }

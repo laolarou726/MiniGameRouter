@@ -1,3 +1,4 @@
+using System.Net;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -9,7 +10,7 @@ public static class HttpPolicyHelper
     {
         return HttpPolicyExtensions
             .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+            .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
             .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
 }

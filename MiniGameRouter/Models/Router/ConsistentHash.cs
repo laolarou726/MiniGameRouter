@@ -5,9 +5,9 @@ namespace MiniGameRouter.Models.Router;
 
 public class ConsistentHash<T> : IDisposable
 {
-    private SortedDictionary<int, T> Circle { get; set; } = new (); //虚拟的圆环，对2的32方取模
-    private int _replicate = 100; //虚拟节点数 count
     private int[] _ayKeys = null!; //缓存节点hash
+    private int _replicate = 100; //虚拟节点数 count
+    private SortedDictionary<int, T> Circle { get; } = new(); //虚拟的圆环，对2的32方取模
 
     public void Dispose()
     {
@@ -17,7 +17,7 @@ public class ConsistentHash<T> : IDisposable
     }
 
     /// <summary>
-    /// 初始化可迭代的节点数
+    ///     初始化可迭代的节点数
     /// </summary>
     /// <param name="nodes">节点</param>
     public void Init(IEnumerable<T> nodes)
@@ -26,7 +26,7 @@ public class ConsistentHash<T> : IDisposable
     }
 
     /// <summary>
-    /// 初始化可迭代的节点数，默认不缓存
+    ///     初始化可迭代的节点数，默认不缓存
     /// </summary>
     /// <param name="nodes">节点</param>
     /// <param name="replicate"></param>
@@ -34,16 +34,13 @@ public class ConsistentHash<T> : IDisposable
     {
         _replicate = replicate;
 
-        foreach (var node in nodes)
-        {
-            Add(node, false);
-        }
+        foreach (var node in nodes) Add(node, false);
 
         _ayKeys = Circle.Keys.ToArray();
     }
 
     /// <summary>
-    /// 添加节点，缓存
+    ///     添加节点，缓存
     /// </summary>
     /// <param name="node"></param>
     public void Add(T node)
@@ -52,41 +49,35 @@ public class ConsistentHash<T> : IDisposable
     }
 
     /// <summary>
-    /// 添加虚拟的圆环的节点
+    ///     添加虚拟的圆环的节点
     /// </summary>
     /// <param name="node">节点</param>
     /// <param name="updateKeyArray">是否缓存node的hash</param>
     private void Add(T node, bool updateKeyArray)
     {
         if (node == null) return;
-        
+
         for (var i = 0; i < _replicate; i++)
         {
             var hash = BetterHash(node.ToString() + i);
             Circle[hash] = node;
         }
 
-        if (updateKeyArray)
-        {
-            _ayKeys = Circle.Keys.ToArray();
-        }
+        if (updateKeyArray) _ayKeys = Circle.Keys.ToArray();
     }
 
     /// <summary>
-    /// 删除真实机器节点，更新缓存
+    ///     删除真实机器节点，更新缓存
     /// </summary>
     /// <param name="node"></param>
     public void Remove(T node)
     {
         if (node == null) return;
-        
-        for (int i = 0; i < _replicate; i++)
+
+        for (var i = 0; i < _replicate; i++)
         {
-            int hash = BetterHash(node.ToString() + i);
-            if (!Circle.Remove(hash))
-            {
-                throw new Exception("can not remove a node that not added");
-            }
+            var hash = BetterHash(node.ToString() + i);
+            if (!Circle.Remove(hash)) throw new Exception("can not remove a node that not added");
         }
 
         _ayKeys = Circle.Keys.ToArray();
@@ -97,22 +88,15 @@ public class ConsistentHash<T> : IDisposable
         var begin = 0;
         var end = ay.Length - 1;
 
-        if (ay[end] < val || ay[0] > val)
-        {
-            return 0;
-        }
+        if (ay[end] < val || ay[0] > val) return 0;
 
         while (end - begin > 1)
         {
             var mid = (end + begin) / 2;
             if (ay[mid] >= val)
-            {
                 end = mid;
-            }
             else
-            {
                 begin = mid;
-            }
         }
 
         if (ay[begin] > val || ay[end] < val)
@@ -130,7 +114,7 @@ public class ConsistentHash<T> : IDisposable
     }
 
     /// <summary>
-    /// MurMurHash2算法,性能高,碰撞率低
+    ///     MurMurHash2算法,性能高,碰撞率低
     /// </summary>
     /// <param name="key">计算hash的字符串</param>
     /// <returns>hash值</returns>

@@ -7,12 +7,12 @@ public class Murmur3Helper
     private const ulong ReadSize = 16;
     private const ulong C1 = 0x87c37b91114253d5L;
     private const ulong C2 = 0x4cf5ad432745937fL;
-
-    private ulong _length;
     private readonly uint _seed; // if want to start with a seed, create a constructor
     private ulong _h1;
     private ulong _h2;
-    
+
+    private ulong _length;
+
     public Murmur3Helper()
     {
         _seed = 0;
@@ -21,6 +21,31 @@ public class Murmur3Helper
     public Murmur3Helper(uint seed)
     {
         _seed = seed;
+    }
+
+    public byte[] Hash
+    {
+        get
+        {
+            _h1 ^= _length;
+            _h2 ^= _length;
+
+            _h1 += _h2;
+            _h2 += _h1;
+
+            _h1 = MixFinal(_h1);
+            _h2 = MixFinal(_h2);
+
+            _h1 += _h2;
+            _h2 += _h1;
+
+            var hash = new byte[ReadSize];
+
+            Array.Copy(BitConverter.GetBytes(_h1), 0, hash, 0, 8);
+            Array.Copy(BitConverter.GetBytes(_h2), 0, hash, 8, 8);
+
+            return hash;
+        }
     }
 
     private void MixBody(ulong k1, ulong k2)
@@ -75,18 +100,18 @@ public class Murmur3Helper
     private void ProcessBytes(byte[] bb)
     {
         _h1 = _seed;
-        this._length = 0L;
+        _length = 0L;
 
-        int pos = 0;
-        ulong remaining = (ulong)bb.Length;
+        var pos = 0;
+        var remaining = (ulong)bb.Length;
 
         // read 128 bits, 16 bytes, 2 longs in eacy cycle
         while (remaining >= ReadSize)
         {
-            ulong k1 = bb.GetUInt64(pos);
+            var k1 = bb.GetUInt64(pos);
             pos += 8;
 
-            ulong k2 = bb.GetUInt64(pos);
+            var k2 = bb.GetUInt64(pos);
             pos += 8;
 
             _length += ReadSize;
@@ -128,7 +153,7 @@ public class Murmur3Helper
                 k2 ^= (ulong)bb[pos + 9] << 8; // fall through
                 goto case 9;
             case 9:
-                k2 ^= (ulong)bb[pos + 8]; // fall through
+                k2 ^= bb[pos + 8]; // fall through
                 goto case 8;
             case 8:
                 k1 ^= bb.GetUInt64(pos);
@@ -152,7 +177,7 @@ public class Murmur3Helper
                 k1 ^= (ulong)bb[pos + 1] << 8; // fall through
                 goto case 1;
             case 1:
-                k1 ^= (ulong)bb[pos]; // fall through
+                k1 ^= bb[pos]; // fall through
                 break;
             default:
                 throw new Exception("Something went wrong with remaining bytes calculation.");
@@ -160,30 +185,5 @@ public class Murmur3Helper
 
         _h1 ^= MixKey1(k1);
         _h2 ^= MixKey2(k2);
-    }
-
-    public byte[] Hash
-    {
-        get
-        {
-            _h1 ^= _length;
-            _h2 ^= _length;
-
-            _h1 += _h2;
-            _h2 += _h1;
-
-            _h1 = MixFinal(_h1);
-            _h2 = MixFinal(_h2);
-
-            _h1 += _h2;
-            _h2 += _h1;
-
-            var hash = new byte[ReadSize];
-
-            Array.Copy(BitConverter.GetBytes(_h1), 0, hash, 0, 8);
-            Array.Copy(BitConverter.GetBytes(_h2), 0, hash, 8, 8);
-
-            return hash;
-        }
     }
 }

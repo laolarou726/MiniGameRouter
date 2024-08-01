@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using MiniGameRouter.Interfaces;
-using MiniGameRouter.Models;
 using MiniGameRouter.Models.Router;
 using MiniGameRouter.Shared.Models;
 
@@ -10,14 +9,6 @@ public class NodeWeightedRouteService : IRoutingService
 {
     private readonly ConcurrentDictionary<string, WeightedRouter<EndPointRecord>> _mappings = [];
 
-    public EndPointRecord? GetRandom(string serviceName)
-    {
-        if (!_mappings.TryGetValue(serviceName, out var router))
-            return null;
-
-        return router.GetRandom();
-    }
-    
     public EndPointRecord? Get(string serviceName, string key = null!)
     {
         if (!_mappings.TryGetValue(serviceName, out var router))
@@ -59,10 +50,18 @@ public class NodeWeightedRouteService : IRoutingService
     public bool RemoveMapping(string serviceName = null!)
     {
         var result = _mappings.TryRemove(serviceName, out var removed);
-        
+
         if (result)
             removed!.Dispose();
 
         return result;
+    }
+
+    public EndPointRecord? GetRandom(string serviceName)
+    {
+        if (!_mappings.TryGetValue(serviceName, out var router))
+            return null;
+
+        return router.GetRandom();
     }
 }

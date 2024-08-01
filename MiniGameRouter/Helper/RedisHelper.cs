@@ -11,15 +11,15 @@ public static class RedisHelper
         {
             AbsoluteExpirationRelativeToNow = expiry
         };
-        
+
         var json = JsonSerializer.Serialize(value);
         await cache.SetStringAsync(key, json, options);
     }
-    
+
     public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key)
     {
         var json = await cache.GetStringAsync(key);
-        
+
         return json is null
             ? default
             : JsonSerializer.Deserialize<T>(json);

@@ -11,13 +11,13 @@ public static class RoutingModeHelper
             result = ("Random", null);
             return true;
         }
-        
+
         if (raw.StartsWith("weighted", StringComparison.OrdinalIgnoreCase))
         {
             result = ("Weighted", null);
             return true;
         }
-        
+
         if (raw.StartsWith("hash", StringComparison.OrdinalIgnoreCase))
         {
             var parts = raw.Split(";", StringSplitOptions.RemoveEmptyEntries);
@@ -26,7 +26,7 @@ public static class RoutingModeHelper
                 result = null;
                 return false;
             }
-            
+
             result = ("Hash", parts[1]);
             return true;
         }

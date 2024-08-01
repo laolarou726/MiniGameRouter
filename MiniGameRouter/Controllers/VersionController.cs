@@ -1,6 +1,5 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace MiniGameRouter.Controllers;
 

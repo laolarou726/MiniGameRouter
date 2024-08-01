@@ -21,7 +21,7 @@ public static class RegisterFactory
     {
         services.AddSingleton<ServiceHealthManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
-        
+
         return services
             .AddApiClients(options)
             .AddHiveEssentials()
@@ -38,7 +38,7 @@ public static class RegisterFactory
                 client.BaseAddress = new Uri(options.ConnectionString);
             })
             .AddPolicyHandler(HttpPolicyHelper.GetRetryPolicy());
-        
+
         services
             .AddHttpClient<IHealthCheckService, HealthCheckService>(client =>
             {
@@ -52,10 +52,10 @@ public static class RegisterFactory
                 client.BaseAddress = new Uri(options.ConnectionString);
             })
             .AddPolicyHandler(HttpPolicyHelper.GetRetryPolicy());
-        
+
         return services;
     }
-    
+
     private static IServiceCollection AddHiveEssentials(this IServiceCollection services)
     {
         services.AddSingleton<ICustomCodecProvider, DefaultCustomCodecProvider>();

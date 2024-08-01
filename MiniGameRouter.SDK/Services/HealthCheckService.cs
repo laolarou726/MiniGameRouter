@@ -12,7 +12,7 @@ public class HealthCheckService : IHealthCheckService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
-    
+
     public HealthCheckService(
         HttpClient httpClient,
         ILogger<HealthCheckService> logger)
@@ -34,7 +34,7 @@ public class HealthCheckService : IHealthCheckService
             ServiceName = serviceName,
             Status = status
         };
-        
+
         await using var stream = RecycleMemoryStreamManagerHolder.Shared.GetStream();
         await JsonSerializer.SerializeAsync(stream, reqModel);
 
@@ -46,13 +46,11 @@ public class HealthCheckService : IHealthCheckService
         using var res = await _httpClient.SendAsync(req);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
-        {
             _logger.LogWarning(
                 "HealthCheck endpoint not found for [{service}] at [{endPoint}].",
                 serviceName,
                 endPoint);
-        }
-        
+
         return res.IsSuccessStatusCode;
     }
 }

@@ -1,4 +1,3 @@
-using MiniGameRouter.Models;
 using MiniGameRouter.Shared.Models;
 
 namespace MiniGameRouter.Interfaces;

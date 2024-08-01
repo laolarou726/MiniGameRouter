@@ -1,5 +1,3 @@
-using System.Numerics;
-using MiniGameRouter.Interfaces;
 using MiniGameRouter.Shared.Interfaces;
 
 namespace MiniGameRouter.Models.Router;
@@ -24,13 +22,13 @@ public class WeightedRouter<T> : IDisposable where T : class, IValidate, IWeight
             _totalWeight += endPoint.Weight;
         }
     }
-    
+
     public void Add(IEnumerable<T> endPoints)
     {
         foreach (var endPoint in endPoints)
             Add(endPoint);
     }
-    
+
     public bool Remove(T endPoint)
     {
         lock (_lock)
@@ -52,10 +50,10 @@ public class WeightedRouter<T> : IDisposable where T : class, IValidate, IWeight
             if (_endPoints.Count == 0)
                 return null;
         }
-        
+
         return _endPoints[Random.Shared.Next(0, _endPoints.Count)];
     }
-    
+
     public T? Get()
     {
         lock (_lock)
@@ -63,7 +61,7 @@ public class WeightedRouter<T> : IDisposable where T : class, IValidate, IWeight
             if (_endPoints.Count == 0)
                 return null;
         }
-        
+
         // Generate a random number within total weight
         var randomNumber = (uint)Random.Shared.NextInt64(0, (long)_totalWeight);
 
@@ -75,10 +73,7 @@ public class WeightedRouter<T> : IDisposable where T : class, IValidate, IWeight
             foreach (var endpoint in _endPoints.Where(endpoint => endpoint.IsValid))
             {
                 cumulativeWeight += endpoint.Weight;
-                if (randomNumber < cumulativeWeight)
-                {
-                    return endpoint;
-                }
+                if (randomNumber < cumulativeWeight) return endpoint;
             }
         }
 

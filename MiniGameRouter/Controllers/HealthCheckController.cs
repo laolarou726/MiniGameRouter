@@ -13,10 +13,10 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class HealthCheckController : Controller
 {
+    private readonly IDistributedCache _cache;
     private readonly EndPointMappingContext _endPointMappingContext;
     private readonly HealthCheckService _healthCheckService;
-    private readonly IDistributedCache _cache;
-    
+
     public HealthCheckController(
         EndPointMappingContext endPointMappingContext,
         HealthCheckService healthCheckService,
@@ -26,7 +26,7 @@ public sealed class HealthCheckController : Controller
         _healthCheckService = healthCheckService;
         _cache = cache;
     }
-    
+
     [HttpPut("report")]
     public async Task<IActionResult> ReportAsync(
         [FromBody] HealthCheckRequestModel model)
@@ -39,17 +39,17 @@ public sealed class HealthCheckController : Controller
             var hasService = await _endPointMappingContext.EndPoints
                 .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
                                e.TargetEndPoint == model.EndPoint);
-            
+
             if (!hasService)
                 return BadRequest("Service not found");
         }
-        
+
         var statusHistory = new HealthCheckStatus
         {
             CheckTime = DateTime.UtcNow,
             Status = model.Status
         };
-        
+
         await _healthCheckService.AddCheckAsync(model, statusHistory, _cache);
 
         return Ok();

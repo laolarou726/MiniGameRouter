@@ -16,15 +16,15 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class EndPointController : Controller
 {
-    private readonly bool _enforceHealthy;
-    
-    private readonly EndPointMappingContext _endPointMappingContext;
-    private readonly HealthCheckService _healthCheckService;
-    private readonly NodeWeightedRouteService _weightedRouteService;
-    private readonly NodeHashRouteService _hashRouteService;
     private readonly IDistributedCache _cache;
+
+    private readonly EndPointMappingContext _endPointMappingContext;
+    private readonly bool _enforceHealthy;
+    private readonly NodeHashRouteService _hashRouteService;
+    private readonly HealthCheckService _healthCheckService;
     private readonly ILogger _logger;
-    
+    private readonly NodeWeightedRouteService _weightedRouteService;
+
     public EndPointController(
         IConfiguration configuration,
         EndPointMappingContext endPointMappingContext,
@@ -35,7 +35,7 @@ public sealed class EndPointController : Controller
         ILogger<EndPointController> logger)
     {
         _enforceHealthy = configuration.GetValue<bool>("Routing:EnforceHealthy");
-        
+
         _endPointMappingContext = endPointMappingContext;
         _healthCheckService = healthCheckService;
         _weightedRouteService = weightedRouteService;
@@ -69,22 +69,22 @@ public sealed class EndPointController : Controller
     {
         if (!_enforceHealthy)
             return Ok(endPointRecord);
-        
+
         var healthCheckKey = HealthCheckService.GetServiceName(endPointRecord);
         var healthStatus = await _cache.GetAsync<ServiceStatus?>(healthCheckKey);
 
         if (healthStatus == null) return BadRequest("no healthy upstream");
         if (healthStatus == ServiceStatus.Red) return BadRequest("no healthy upstream");
-        
+
         return Ok(endPointRecord);
     }
-    
+
     [HttpGet("get/{id:guid}")]
     public async Task<IActionResult> GetAsync([FromRoute] Guid id)
     {
         var idStr = id.ToString("N");
         var cached = await _cache.GetAsync<EndPointRecord>(idStr);
-        
+
         if (cached is not null)
             return await CheckHealthStatusAndReturn(cached);
 
@@ -101,7 +101,7 @@ public sealed class EndPointController : Controller
             found.IsValid);
 
         await _cache.SetAsync(idStr, record);
-        
+
         _logger.LogInformation(
             "Client [{Addr}] got mapping using ID [{Id}]",
             Request.HttpContext.Connection.RemoteIpAddress,
@@ -109,14 +109,14 @@ public sealed class EndPointController : Controller
 
         return await CheckHealthStatusAndReturn(record);
     }
-    
+
     [HttpGet("get/{serviceName}")]
     public async Task<IActionResult> GetByServiceAsync(
         [FromRoute] string serviceName,
         [FromQuery] string? mode)
     {
         mode ??= "random";
-        
+
         if (!mode.ResolveRoute(out var modePair))
             return BadRequest("Invalid mode");
 
@@ -131,13 +131,13 @@ public sealed class EndPointController : Controller
                 var fetched = await PrefetchCacheAsync(
                     serviceName,
                     _weightedRouteService,
-                    s => ((NodeWeightedRouteService) s).GetRandom(serviceName));
+                    s => ((NodeWeightedRouteService)s).GetRandom(serviceName));
 
                 if (fetched == null) return NotFound();
 
                 return await CheckHealthStatusAndReturn(fetched);
             }
-            
+
             _logger.LogInformation(
                 "Client [{Addr}] got random mapping to [{EndPoint}] using service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
@@ -146,7 +146,7 @@ public sealed class EndPointController : Controller
 
             return await CheckHealthStatusAndReturn(rand);
         }
-        
+
         if (modePairVal.ModeStr == "Weighted")
         {
             var weighted = _weightedRouteService.Get(serviceName);
@@ -162,7 +162,7 @@ public sealed class EndPointController : Controller
 
                 return await CheckHealthStatusAndReturn(fetched);
             }
-            
+
             _logger.LogInformation(
                 "Client [{Addr}] got weighted mapping to [{EndPoint}] using service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
@@ -171,7 +171,7 @@ public sealed class EndPointController : Controller
 
             return await CheckHealthStatusAndReturn(weighted);
         }
-        
+
         if (string.IsNullOrEmpty(modePairVal.HashKey))
             return BadRequest("Invalid hash key");
 
@@ -188,7 +188,7 @@ public sealed class EndPointController : Controller
 
             hashed = fetched;
         }
-        
+
         _logger.LogInformation(
             "Client [{Addr}] got hashed mapping to [{EndPoint}] using service [{Service}]",
             Request.HttpContext.Connection.RemoteIpAddress,
@@ -197,7 +197,7 @@ public sealed class EndPointController : Controller
 
         return await CheckHealthStatusAndReturn(hashed);
     }
-    
+
     [HttpPost("create")]
     public async Task<IActionResult> CreateAsync(
         [FromBody] EndPointMappingRequestModel model)
@@ -205,13 +205,13 @@ public sealed class EndPointController : Controller
         if (string.IsNullOrEmpty(model.ServiceName) ||
             string.IsNullOrEmpty(model.TargetEndPoint))
             return BadRequest("Invalid model");
-        
+
         var anyExists = await _endPointMappingContext.EndPoints
             .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
                            e.TargetEndPoint == model.TargetEndPoint);
-        
+
         if (anyExists) return BadRequest("Mapping already exists");
-        
+
         var record = new EndPointMappingModel
         {
             ServiceName = model.ServiceName,
@@ -220,13 +220,13 @@ public sealed class EndPointController : Controller
             TimeoutInMilliseconds = model.TimeoutInMilliseconds,
             IsValid = true
         };
-        
+
         await _endPointMappingContext.EndPoints.AddAsync(record);
         await _endPointMappingContext.SaveChangesAsync();
-        
+
         return Ok(record.Id);
     }
-    
+
     [HttpPut("edit/{id:guid}")]
     public async Task<IActionResult> EditAsync(
         [FromBody] EndPointMappingRequestModel model,
@@ -242,7 +242,7 @@ public sealed class EndPointController : Controller
             found.TargetEndPoint = model.TargetEndPoint;
         found.Weight = model.Weight;
         found.TimeoutInMilliseconds = model.TimeoutInMilliseconds;
-        
+
         var record = new EndPointRecord(
             found.Id,
             found.ServiceName,
@@ -254,16 +254,16 @@ public sealed class EndPointController : Controller
         _hashRouteService.RemoveNode(record);
         _weightedRouteService.RemoveNode(record);
         _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
-        
+
         var cacheKey = HealthCheckService.GetServiceName(found);
         await _cache.RemoveAsync(cacheKey);
 
         _endPointMappingContext.EndPoints.Update(found);
         await _endPointMappingContext.SaveChangesAsync();
-        
+
         return Ok();
     }
-    
+
     [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> DeleteAsync(
         [FromRoute] Guid id)
@@ -289,7 +289,7 @@ public sealed class EndPointController : Controller
 
         _endPointMappingContext.EndPoints.Remove(found);
         await _endPointMappingContext.SaveChangesAsync();
-        
+
         return Ok();
     }
 }
