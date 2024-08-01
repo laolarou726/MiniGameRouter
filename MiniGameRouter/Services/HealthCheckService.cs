@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniGameRouter.Helper;
 using MiniGameRouter.Models;
+using MiniGameRouter.SDK.Models;
+using MiniGameRouter.Shared.Models;
 
 namespace MiniGameRouter.Services;
 
@@ -15,6 +17,7 @@ public sealed class HealthCheckService : BackgroundService
         private readonly byte[] _history = new byte[3];
         
         public string ServiceName { get; } = serviceName;
+        public string EndPoint { get; } = endPoint;
         public ServiceStatus AverageStatus { get; private set; }
         public DateTime LastCheckUtc { get; private set; }
         public Queue<HealthCheckStatus> CheckHistories { get; } = new (MaxHistoryCount);
@@ -57,7 +60,8 @@ public sealed class HealthCheckService : BackgroundService
             await cache.SetAsync(ServiceName, AverageStatus);
         }
     }
-    
+
+    private readonly TimeSpan _checkTimeout = TimeSpan.FromSeconds(15);
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ConcurrentDictionary<string, HealthCheckEntry> _entries = new ();
     
@@ -106,7 +110,7 @@ public sealed class HealthCheckService : BackgroundService
         {
             foreach (var entry in _entries.Values)
             {
-                if (entry.LastCheckUtc.Add(TimeSpan.FromSeconds(10)) >= DateTime.UtcNow) continue;
+                if (entry.LastCheckUtc.Add(_checkTimeout) >= DateTime.UtcNow) continue;
                 
                 var status = new HealthCheckStatus
                 {
@@ -117,7 +121,7 @@ public sealed class HealthCheckService : BackgroundService
                 await entry.AddCheckAsync(status, cache);
             }
             
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            await Task.Delay(_checkTimeout, stoppingToken);
         }
     }
 }

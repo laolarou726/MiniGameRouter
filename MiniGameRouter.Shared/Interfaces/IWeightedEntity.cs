@@ -1,6 +1,4 @@
-using System.Numerics;
-
-namespace MiniGameRouter.Interfaces;
+namespace MiniGameRouter.Shared.Interfaces;
 
 public interface IWeightedEntity
 {

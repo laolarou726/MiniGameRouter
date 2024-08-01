@@ -1,4 +1,4 @@
-namespace MiniGameRouter.Models;
+namespace MiniGameRouter.SDK.Models;
 
 public enum ServiceStatus : byte
 {

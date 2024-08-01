@@ -1,11 +1,6 @@
-namespace MiniGameRouter.Models;
+using MiniGameRouter.SDK.Models;
 
-public class HealthCheckRequestModel
-{
-    public string ServiceName { get; set; }
-    public string EndPoint { get; set; }
-    public ServiceStatus Status { get; set; }
-}
+namespace MiniGameRouter.Models;
 
 public class HealthCheckStatus
 {

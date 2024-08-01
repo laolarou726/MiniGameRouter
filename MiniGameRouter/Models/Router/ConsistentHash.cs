@@ -92,29 +92,6 @@ public class ConsistentHash<T> : IDisposable
         _ayKeys = Circle.Keys.ToArray();
     }
 
-    /// <summary>
-    /// 判断是否存在key对应的hash，有则返回没有返回最近一个节点
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    private T GetNodeSlow(string key)
-    {
-        var hash = BetterHash(key);
-        
-        if (Circle.TryGetValue(hash, out var value))
-            return value;
-
-        // 沿环的顺时针找到一个节点
-        var first = Circle.Keys.FirstOrDefault(h => h >= hash);
-        if (first == default)
-        {
-            first = _ayKeys[0];
-        }
-
-        var node = Circle[first];
-        return node;
-    }
-
     private static int GetFirst(int[] ay, int val)
     {
         var begin = 0;

@@ -9,9 +9,19 @@ public class Murmur3Helper
     private const ulong C2 = 0x4cf5ad432745937fL;
 
     private ulong _length;
-    private uint _seed; // if want to start with a seed, create a constructor
+    private readonly uint _seed; // if want to start with a seed, create a constructor
     private ulong _h1;
     private ulong _h2;
+    
+    public Murmur3Helper()
+    {
+        _seed = 0;
+    }
+
+    public Murmur3Helper(uint seed)
+    {
+        _seed = seed;
+    }
 
     private void MixBody(ulong k1, ulong k2)
     {

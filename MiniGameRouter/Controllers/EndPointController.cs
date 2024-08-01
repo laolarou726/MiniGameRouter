@@ -5,7 +5,9 @@ using MiniGameRouter.Helper;
 using MiniGameRouter.Interfaces;
 using MiniGameRouter.Models;
 using MiniGameRouter.Models.DB;
+using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Services.RoutingServices;
+using MiniGameRouter.Shared.Models;
 using HealthCheckService = MiniGameRouter.Services.HealthCheckService;
 
 namespace MiniGameRouter.Controllers;
@@ -78,9 +80,7 @@ public sealed class EndPointController : Controller
     }
     
     [HttpGet("get/{id:guid}")]
-    public async Task<IActionResult> GetAsync(
-        [FromRoute] Guid id,
-        [FromQuery] string? mode)
+    public async Task<IActionResult> GetAsync([FromRoute] Guid id)
     {
         var idStr = id.ToString("N");
         var cached = await _cache.GetAsync<EndPointRecord>(idStr);

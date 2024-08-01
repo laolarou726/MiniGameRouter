@@ -1,4 +1,4 @@
-namespace MiniGameRouter.Interfaces;
+namespace MiniGameRouter.Shared.Interfaces;
 
 public interface IValidate
 { 

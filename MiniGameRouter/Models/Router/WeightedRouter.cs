@@ -1,5 +1,6 @@
 using System.Numerics;
 using MiniGameRouter.Interfaces;
+using MiniGameRouter.Shared.Interfaces;
 
 namespace MiniGameRouter.Models.Router;
 

@@ -31,4 +31,8 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MiniGameRouter.Shared\MiniGameRouter.Shared.csproj" />
+    </ItemGroup>
+
 </Project>

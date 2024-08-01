@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using MiniGameRouter.Interfaces;
 using MiniGameRouter.Models;
 using MiniGameRouter.Models.Router;
+using MiniGameRouter.Shared.Models;
 
 namespace MiniGameRouter.Services.RoutingServices;
 
