@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Network.Tcp", "Hive.Fr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SDK", "MiniGameRouter.SDK\MiniGameRouter.SDK.csproj", "{22EBD05A-99C9-4545-850C-92C9EEC995F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SideCar", "MiniGameRouter.SideCar\MiniGameRouter.SideCar.csproj", "{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{22EBD05A-99C9-4545-850C-92C9EEC995F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22EBD05A-99C9-4545-850C-92C9EEC995F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22EBD05A-99C9-4545-850C-92C9EEC995F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D56EF984-B385-4E87-961A-8A409E2B0274} = {28660E92-0725-4702-8C1A-295F046E5FA1}

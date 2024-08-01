@@ -20,6 +20,7 @@ public static class RegisterFactory
         MiniGameRouterOptions options)
     {
         services.AddSingleton<ServiceHealthManager>();
+        services.AddHostedService<ServiceRegistrationManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
 
         return services
