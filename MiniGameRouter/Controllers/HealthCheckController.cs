@@ -26,6 +26,12 @@ public sealed class HealthCheckController : Controller
         _healthCheckService = healthCheckService;
         _cache = cache;
     }
+    
+    [HttpGet("status")]
+    public IActionResult Status()
+    {
+        return Ok(_healthCheckService.GetEntries());
+    }
 
     [HttpPut("report")]
     public async Task<IActionResult> ReportAsync(

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Distributed;
 using MiniGameRouter.Helper;
@@ -37,6 +38,11 @@ public sealed class HealthCheckService : BackgroundService
     public static string GetServiceName(EndPointMappingModel model)
     {
         return GetServiceName(model.ServiceName, model.TargetEndPoint);
+    }
+    
+    public FrozenDictionary<string, HealthCheckEntry> GetEntries()
+    {
+        return _entries.ToFrozenDictionary();
     }
 
     public bool TryGetStatus(

@@ -4,12 +4,13 @@ using Hive.Codec.MemoryPack;
 using Hive.Codec.Shared;
 using Hive.Network.Abstractions.Session;
 using Hive.Network.Tcp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MiniGameRouter.SDK.Helpers;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.SDK.Managers;
-using MiniGameRouter.SDK.Models;
 using MiniGameRouter.SDK.Services;
+using MiniGameRouter.Shared.Models.RoutingConfig;
 
 namespace MiniGameRouter.SDK;
 
@@ -17,22 +18,27 @@ public static class RegisterFactory
 {
     public static IServiceCollection RegisterMiniGameRouter(
         this IServiceCollection services,
-        MiniGameRouterOptions options)
+        IConfiguration configuration)
     {
+        services.AddSingleton<ServerConfigurationManager>();
         services.AddSingleton<ServiceHealthManager>();
         services.AddHostedService<ServiceRegistrationManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
 
         return services
-            .AddApiClients(options)
+            .AddApiClients(configuration)
             .AddHiveEssentials()
             .UseTcpStack();
     }
 
     private static IServiceCollection AddApiClients(
         this IServiceCollection services,
-        MiniGameRouterOptions options)
+        IConfiguration configuration)
     {
+        var options = configuration.GetSection("MiniGameRouter").Get<MiniGameRouterOptions>();
+        
+        ArgumentNullException.ThrowIfNull(options);
+        
         services
             .AddHttpClient<IEndPointService, EndPointService>(client =>
             {
