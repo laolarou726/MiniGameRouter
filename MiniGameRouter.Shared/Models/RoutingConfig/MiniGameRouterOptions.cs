@@ -6,5 +6,5 @@ public class MiniGameRouterOptions
 {
     public required string ConnectionString { get; init; }
     public IReadOnlyDictionary<string, EndPointMappingRequestModel[]>? EndPointMappings { get; init; }
-    public IReadOnlyDictionary<string, RoutingModel>? EndPointRoutingConfigs { get; init; }
+    public IReadOnlyDictionary<string, RoutingMode>? EndPointRoutingConfigs { get; init; }
 }

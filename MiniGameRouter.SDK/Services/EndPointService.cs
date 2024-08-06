@@ -32,12 +32,12 @@ public class EndPointService : IEndPointService
 
     public async Task<EndPointRecord?> GetEndPointAsync(
         string serviceName,
-        RoutingModel? routingMode = null,
+        RoutingMode? routingMode = null,
         string? hashKey = null)
     {
         const string url = "/EndPoint/get/";
 
-        if (routingMode == RoutingModel.Hashed && string.IsNullOrEmpty(hashKey))
+        if (routingMode == RoutingMode.Hashed && string.IsNullOrEmpty(hashKey))
             throw new Exception("Hash key is required for Hashed routing mode.");
 
         var uriBuilder = new UriBuilder($"{url}{Uri.EscapeDataString(serviceName)}");
@@ -46,9 +46,9 @@ public class EndPointService : IEndPointService
         if (routingMode != null)
             query["mode"] = routingMode switch
             {
-                RoutingModel.Random => "random",
-                RoutingModel.Weighted => "weighted",
-                RoutingModel.Hashed => $"hash;{Uri.EscapeDataString(hashKey!)}",
+                RoutingMode.Random => "random",
+                RoutingMode.Weighted => "weighted",
+                RoutingMode.Hashed => $"hash;{Uri.EscapeDataString(hashKey!)}",
                 _ => throw new ArgumentOutOfRangeException(nameof(routingMode), routingMode, null)
             };
 

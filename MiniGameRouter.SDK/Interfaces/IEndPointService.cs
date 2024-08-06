@@ -9,7 +9,7 @@ public interface IEndPointService
 
     Task<EndPointRecord?> GetEndPointAsync(
         string serviceName,
-        RoutingModel? routingMode = null,
+        RoutingMode? routingMode = null,
         string? hashKey = null);
 
     Task<Guid?> CreateEndPointAsync(

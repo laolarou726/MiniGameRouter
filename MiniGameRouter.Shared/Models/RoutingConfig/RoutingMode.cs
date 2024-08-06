@@ -1,6 +1,6 @@
 namespace MiniGameRouter.SDK.Models;
 
-public enum RoutingModel
+public enum RoutingMode
 {
     Random,
     Weighted,

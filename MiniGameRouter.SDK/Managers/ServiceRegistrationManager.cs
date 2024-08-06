@@ -8,16 +8,16 @@ public class ServiceRegistrationManager : IHostedService
 {
     private readonly List<Guid> _endPointIds = [];
     private readonly IEndPointService _endPointService;
-    private readonly IServerConfigurationManager _configuration;
+    private readonly IServerConfigurationProvider _configuration;
     private readonly ILogger _logger;
     
     public ServiceRegistrationManager(
         IEndPointService endPointService,
-        IServerConfigurationManager configurationManager,
+        IServerConfigurationProvider configurationProvider,
         ILogger<ServiceRegistrationManager> logger)
     {
         _endPointService = endPointService;
-        _configuration = configurationManager;
+        _configuration = configurationProvider;
         _logger = logger;
     }
 

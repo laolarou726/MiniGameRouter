@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MiniGameRouter.SDK.Helpers;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.SDK.Managers;
+using MiniGameRouter.SDK.Providers;
 using MiniGameRouter.SDK.Services;
 using MiniGameRouter.Shared.Models.RoutingConfig;
 
@@ -22,7 +23,8 @@ public static class RegisterFactory
     {
         services.AddSingleton<ServiceHealthManager>();
         services.AddHostedService<ServiceRegistrationManager>();
-        services.AddSingleton<IServerConfigurationManager, ServerConfigurationManager>();
+        services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
+        services.AddSingleton<IServerConfigurationProvider, ServerConfigurationProvider>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
 
         return services

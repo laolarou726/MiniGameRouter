@@ -3,15 +3,15 @@ using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.Shared.Models.RoutingConfig;
 
-namespace MiniGameRouter.SDK.Managers;
+namespace MiniGameRouter.SDK.Providers;
 
-public class ServerConfigurationManager : IServerConfigurationManager
+public class ServerConfigurationProvider : IServerConfigurationProvider
 {
     public MiniGameRouterOptions Options { get; init; }
 
-    public ServerConfigurationManager(
+    public ServerConfigurationProvider(
         IConfiguration configuration,
-        ILogger<ServerConfigurationManager> logger)
+        ILogger<ServerConfigurationProvider> logger)
     {
         var options = configuration.GetSection("MiniGameRouter").Get<MiniGameRouterOptions>();
         
