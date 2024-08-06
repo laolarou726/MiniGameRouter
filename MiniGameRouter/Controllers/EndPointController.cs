@@ -78,6 +78,41 @@ public sealed class EndPointController : Controller
 
         return Ok(endPointRecord);
     }
+    
+    [HttpGet("list/{count:int}")]
+    public async Task<IActionResult> ListAsync([FromRoute] int count)
+    {
+        var services = await _endPointMappingContext.EndPoints
+            .Select(e => new EndPointRecord(
+                e.Id,
+                e.ServiceName,
+                e.TargetEndPoint,
+                e.Weight ?? 0,
+                e.TimeoutInMilliseconds,
+                e.IsValid))
+            .OrderBy(e => e.EndPoint)
+            .Take(count)
+            .ToListAsync();
+
+        return Ok(services);
+    }
+    
+    [HttpGet("list/all")]
+    public async Task<IActionResult> ListAllAsync()
+    {
+        var services = await _endPointMappingContext.EndPoints
+            .Select(e => new EndPointRecord(
+                e.Id,
+                e.ServiceName,
+                e.TargetEndPoint,
+                e.Weight ?? 0,
+                e.TimeoutInMilliseconds,
+                e.IsValid))
+            .OrderBy(e => e.EndPoint)
+            .ToListAsync();
+
+        return Ok(services);
+    }
 
     [HttpGet("get/{id:guid}")]
     public async Task<IActionResult> GetAsync([FromRoute] Guid id)

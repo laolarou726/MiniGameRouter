@@ -68,7 +68,7 @@ public class ServiceHealthManager : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             await UpdateServiceHealthAsync(ServiceStatus.Green, stoppingToken);
-            await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(9, 14)), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(Random.Shared.Next(5, 10)), stoppingToken);
         }
     }
 }

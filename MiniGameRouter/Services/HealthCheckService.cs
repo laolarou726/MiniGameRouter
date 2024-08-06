@@ -100,7 +100,7 @@ public sealed class HealthCheckService : BackgroundService
         public string ServiceName { get; } = serviceName;
         public string EndPoint { get; } = endPoint;
         public ServiceStatus AverageStatus { get; private set; }
-        public DateTime LastCheckUtc { get; }
+        public DateTime LastCheckUtc { get; private set; }
         public Queue<HealthCheckStatus> CheckHistories { get; } = new(MaxHistoryCount);
 
         private void ComputeAverageStatus()
@@ -118,6 +118,8 @@ public sealed class HealthCheckService : BackgroundService
 
         private void AddCheck(HealthCheckStatus status)
         {
+            LastCheckUtc = DateTime.UtcNow;
+            
             CheckHistories.Enqueue(status);
             if (CheckHistories.Count > MaxHistoryCount)
             {

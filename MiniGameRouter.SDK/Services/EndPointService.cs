@@ -79,6 +79,9 @@ public class EndPointService : IEndPointService
     {
         const string url = "/EndPoint/create";
 
+        if (timeoutInMilliseconds <= 0)
+            timeoutInMilliseconds = (int) TimeSpan.FromMinutes(5).TotalMilliseconds;
+
         var reqModel = new EndPointMappingRequestModel
         {
             ServiceName = serviceName,
