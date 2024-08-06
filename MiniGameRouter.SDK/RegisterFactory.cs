@@ -20,9 +20,9 @@ public static class RegisterFactory
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddSingleton<ServerConfigurationManager>();
         services.AddSingleton<ServiceHealthManager>();
         services.AddHostedService<ServiceRegistrationManager>();
+        services.AddSingleton<IServerConfigurationManager, ServerConfigurationManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
 
         return services

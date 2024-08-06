@@ -223,8 +223,21 @@ public sealed class EndPointController : Controller
 
         await _endPointMappingContext.EndPoints.AddAsync(record);
         await _endPointMappingContext.SaveChangesAsync();
+        
+        _logger.LogInformation(
+            "Client [{Addr}] created mapping for service [{Service}]",
+            Request.HttpContext.Connection.RemoteIpAddress,
+            model.ServiceName);
 
-        return Ok(record.Id);
+        var result = new EndPointRecord(
+            record.Id,
+            record.ServiceName,
+            record.TargetEndPoint,
+            record.Weight ?? 1,
+            record.TimeoutInMilliseconds,
+            record.IsValid);
+
+        return Ok(result);
     }
 
     [HttpPut("edit/{id:guid}")]
@@ -260,6 +273,11 @@ public sealed class EndPointController : Controller
 
         _endPointMappingContext.EndPoints.Update(found);
         await _endPointMappingContext.SaveChangesAsync();
+        
+        _logger.LogInformation(
+            "Client [{Addr}] edited mapping for service [{Service}]",
+            Request.HttpContext.Connection.RemoteIpAddress,
+            model.ServiceName);
 
         return Ok();
     }
@@ -289,6 +307,11 @@ public sealed class EndPointController : Controller
 
         _endPointMappingContext.EndPoints.Remove(found);
         await _endPointMappingContext.SaveChangesAsync();
+        
+        _logger.LogInformation(
+            "Client [{Addr}] deleted mapping for service [{Service}]",
+            Request.HttpContext.Connection.RemoteIpAddress,
+            found.ServiceName);
 
         return Ok();
     }

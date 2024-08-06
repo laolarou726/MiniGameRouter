@@ -16,15 +16,18 @@ public sealed class HealthCheckController : Controller
     private readonly IDistributedCache _cache;
     private readonly EndPointMappingContext _endPointMappingContext;
     private readonly HealthCheckService _healthCheckService;
+    private readonly ILogger _logger;
 
     public HealthCheckController(
         EndPointMappingContext endPointMappingContext,
         HealthCheckService healthCheckService,
-        IDistributedCache cache)
+        IDistributedCache cache,
+        ILogger<HealthCheckController> logger)
     {
         _endPointMappingContext = endPointMappingContext;
         _healthCheckService = healthCheckService;
         _cache = cache;
+        _logger = logger;
     }
     
     [HttpGet("status")]
@@ -57,7 +60,13 @@ public sealed class HealthCheckController : Controller
         };
 
         await _healthCheckService.AddCheckAsync(model, statusHistory, _cache);
-
+        
+        _logger.LogInformation(
+            "Service [{service}] reported its status as [{status}] at [{endPoint}].",
+            model.ServiceName,
+            model.Status,
+            model.EndPoint);
+        
         return Ok();
     }
 }

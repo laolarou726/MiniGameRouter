@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.Shared.Models.RoutingConfig;
 
 namespace MiniGameRouter.SDK.Managers;
 
-public class ServerConfigurationManager
+public class ServerConfigurationManager : IServerConfigurationManager
 {
     public MiniGameRouterOptions Options { get; init; }
 

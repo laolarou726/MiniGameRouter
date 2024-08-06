@@ -26,14 +26,24 @@ public class ServiceHealthManager : BackgroundService
     private async Task UpdateServiceHealthAsync(ServiceStatus status, CancellationToken ct)
     {
         using var scope = _serviceScopeFactory.CreateScope();
-        var endPointService = scope.ServiceProvider.GetRequiredService<IHealthCheckService>();
+        var healthCheckService = scope.ServiceProvider.GetRequiredService<IHealthCheckService>();
 
         foreach (var endPoint in _endPoints.Values)
         {
             if (ct.IsCancellationRequested)
                 break;
 
-            var health = await endPointService.ReportHealthAsync(endPoint.ServiceName, endPoint.EndPoint, status);
+            var health = await healthCheckService.ReportHealthAsync(endPoint.ServiceName, endPoint.EndPoint, status);
+
+            if (!health)
+            {
+                _logger.LogWarning(
+                    "HealthCheck for [{service}] at [{endPoint}] failed.",
+                    endPoint.ServiceName,
+                    endPoint.EndPoint);
+                
+                continue;
+            }
 
             _logger.LogInformation(
                 "HealthCheck for [{service}] at [{endPoint}] is [{status}].",

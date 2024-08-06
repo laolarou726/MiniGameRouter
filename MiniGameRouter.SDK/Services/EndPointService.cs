@@ -1,8 +1,6 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
-using Hive.Network.Shared;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.SDK.Managers;
@@ -89,13 +87,8 @@ public class EndPointService : IEndPointService
             Weight = weight
         };
 
-        await using var stream = RecycleMemoryStreamManagerHolder.Shared.GetStream();
-        await JsonSerializer.SerializeAsync(stream, reqModel);
-
-        stream.Seek(0, SeekOrigin.Begin);
-
-        using var req = new HttpRequestMessage(HttpMethod.Put, url);
-        req.Content = new StreamContent(stream);
+        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        req.Content = JsonContent.Create(reqModel);
 
         using var res = await _httpClient.SendAsync(req);
 
@@ -113,9 +106,17 @@ public class EndPointService : IEndPointService
 
         res.EnsureSuccessStatusCode();
 
-        var createdId = await res.Content.ReadFromJsonAsync<Guid>();
+        var createdRecord = await res.Content.ReadFromJsonAsync<EndPointRecord>();
+        
+        if (createdRecord == null)
+        {
+            _logger.LogError("Failed to create endpoint [{endPoint}].", reqModel);
+            return null;
+        }
+        
+        _healthManager.AddOrUpdateEndPoint(createdRecord);
 
-        return createdId;
+        return createdRecord.Id;
     }
 
     public async Task<bool> EditEndPointAsync(
@@ -124,13 +125,8 @@ public class EndPointService : IEndPointService
     {
         var uri = $"/EndPoint/edit/{id:N}";
 
-        await using var stream = RecycleMemoryStreamManagerHolder.Shared.GetStream();
-        await JsonSerializer.SerializeAsync(stream, reqModel);
-
-        stream.Seek(0, SeekOrigin.Begin);
-
         using var req = new HttpRequestMessage(HttpMethod.Put, uri);
-        req.Content = new StreamContent(stream);
+        req.Content = JsonContent.Create(reqModel);
 
         using var res = await _httpClient.SendAsync(req);
 
@@ -159,6 +155,8 @@ public class EndPointService : IEndPointService
         }
 
         res.EnsureSuccessStatusCode();
+        
+        _healthManager.RemoveEndPoint(id);
 
         return true;
     }

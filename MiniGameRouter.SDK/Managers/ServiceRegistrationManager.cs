@@ -1,8 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
-using MiniGameRouter.Shared.Models;
 
 namespace MiniGameRouter.SDK.Managers;
 
@@ -10,16 +8,16 @@ public class ServiceRegistrationManager : IHostedService
 {
     private readonly List<Guid> _endPointIds = [];
     private readonly IEndPointService _endPointService;
-    private readonly IConfiguration _configuration;
+    private readonly IServerConfigurationManager _configuration;
     private readonly ILogger _logger;
     
     public ServiceRegistrationManager(
         IEndPointService endPointService,
-        IConfiguration configuration,
+        IServerConfigurationManager configurationManager,
         ILogger<ServiceRegistrationManager> logger)
     {
         _endPointService = endPointService;
-        _configuration = configuration;
+        _configuration = configurationManager;
         _logger = logger;
     }
 
@@ -27,17 +25,18 @@ public class ServiceRegistrationManager : IHostedService
     {
         _logger.LogInformation("Service registration manager started.");
         
-        var endPoints = _configuration
-            .GetSection("MiniGameRouter")
-            .GetSection("EndPoints")
-            .Get<EndPointMappingRequestModel[]>();
-        
-        if (endPoints == null)
+        if (_configuration.Options.EndPointMappings == null)
         {
             _logger.LogWarning("No end points found in configuration.");
             return;
         }
 
+        var endPoints = _configuration.Options.EndPointMappings.Values
+            .SelectMany(v => v)
+            .ToList();
+        
+        _logger.LogInformation("Found {count} end points in configuration.", endPoints.Count);
+        
         var index = 0;
         
         foreach (var endPoint in endPoints)
@@ -65,6 +64,11 @@ public class ServiceRegistrationManager : IHostedService
             }
             
             _endPointIds.Add(id.Value);
+            
+            _logger.LogInformation(
+                "EndPoint create for service [{serviceName}] at [{endPoint}]",
+                endPoint.ServiceName,
+                endPoint.TargetEndPoint);
         }
     }
 
