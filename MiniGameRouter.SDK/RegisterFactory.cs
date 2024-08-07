@@ -79,7 +79,7 @@ public static class RegisterFactory
     {
         services.AddSingleton<IAcceptor<TcpSession>, TcpAcceptor>();
         services.AddSingleton<IConnector<TcpSession>, TcpConnector>();
-
+        
         return services;
     }
 }

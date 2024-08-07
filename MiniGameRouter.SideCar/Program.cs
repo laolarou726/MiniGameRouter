@@ -1,6 +1,8 @@
 using System.Runtime;
 using MiniGameRouter.SDK;
 using MiniGameRouter.SideCar;
+using MiniGameRouter.SideCar.Interfaces;
+using MiniGameRouter.SideCar.Providers;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -20,7 +22,8 @@ builder.Services.AddSerilog(loggerConfiguration =>
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.RegisterMiniGameRouter(builder.Configuration);
-builder.Services.AddHostedService<Worker>();
+builder.Services.AddSingleton<ISideCarOptionsProvider, SideCarOptionsProvider>();
+builder.Services.AddHostedService<SideCarServer>();
 
 Log.Information("Starting MiniGameRouter Sidecar Service...");
 Log.Information("[GC] IsServer={0} LatencyMode={1} LargeObjectHeapCompactionMode={2}",

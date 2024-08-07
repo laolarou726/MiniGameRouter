@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.SDK.Managers;
@@ -13,15 +14,18 @@ public class EndPointService : IEndPointService
 {
     private readonly ServiceHealthManager _healthManager;
     private readonly HttpClient _httpClient;
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger _logger;
 
     public EndPointService(
         ServiceHealthManager healthManager,
         HttpClient httpClient,
+        IHostApplicationLifetime hostApplicationLifetime,
         ILogger<EndPointService> logger)
     {
         _healthManager = healthManager;
         _httpClient = httpClient;
+        _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
     }
 
@@ -56,7 +60,7 @@ public class EndPointService : IEndPointService
 
         var reqUri = uriBuilder.Uri;
         using var req = new HttpRequestMessage(HttpMethod.Get, reqUri);
-        using var res = await _httpClient.SendAsync(req);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
@@ -93,7 +97,7 @@ public class EndPointService : IEndPointService
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
         req.Content = JsonContent.Create(reqModel);
 
-        using var res = await _httpClient.SendAsync(req);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.BadRequest })
         {
@@ -131,7 +135,7 @@ public class EndPointService : IEndPointService
         using var req = new HttpRequestMessage(HttpMethod.Put, uri);
         req.Content = JsonContent.Create(reqModel);
 
-        using var res = await _httpClient.SendAsync(req);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
@@ -149,7 +153,7 @@ public class EndPointService : IEndPointService
         var uri = $"/EndPoint/delete/{id:N}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, uri);
-        using var res = await _httpClient.SendAsync(req);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {

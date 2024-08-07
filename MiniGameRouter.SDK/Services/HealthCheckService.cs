@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.SDK.Models;
@@ -10,13 +11,16 @@ namespace MiniGameRouter.SDK.Services;
 public class HealthCheckService : IHealthCheckService
 {
     private readonly HttpClient _httpClient;
+    private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly ILogger _logger;
 
     public HealthCheckService(
         HttpClient httpClient,
+        IHostApplicationLifetime hostApplicationLifetime,
         ILogger<HealthCheckService> logger)
     {
         _httpClient = httpClient;
+        _hostApplicationLifetime = hostApplicationLifetime;
         _logger = logger;
     }
 
@@ -37,7 +41,7 @@ public class HealthCheckService : IHealthCheckService
         using var req = new HttpRequestMessage(HttpMethod.Put, url);
         req.Content = JsonContent.Create(reqModel);
 
-        using var res = await _httpClient.SendAsync(req);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
             _logger.LogWarning(
