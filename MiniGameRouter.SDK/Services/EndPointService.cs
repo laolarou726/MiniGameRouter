@@ -153,7 +153,7 @@ public class EndPointService : IEndPointService
         var uri = $"/EndPoint/delete/{id:N}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, uri);
-        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopped);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
