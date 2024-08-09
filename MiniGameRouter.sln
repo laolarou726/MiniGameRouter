@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SDK", "MiniG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SideCar", "MiniGameRouter.SideCar\MiniGameRouter.SideCar.csproj", "{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.Benchmark", "MiniGameRouter.Benchmark\MiniGameRouter.Benchmark.csproj", "{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,10 @@ Global
 		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D56EF984-B385-4E87-961A-8A409E2B0274} = {28660E92-0725-4702-8C1A-295F046E5FA1}
