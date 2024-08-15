@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.Services;
 using MiniGameRouter.Services.RoutingServices;
+using Prometheus;
+using Prometheus.DotNetRuntime;
+using Prometheus.SystemMetrics;
 using Serilog;
 
 const string redisInstanceName = "MiniGameRouter:";
@@ -21,6 +24,12 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
+
+// Setup Prometheus
+
+DotNetRuntimeStatsBuilder.Default().StartCollecting();
+builder.Services.AddSystemMetrics();
+builder.Services.UseHttpClientMetrics();
 
 // Add DB contexts
 
@@ -68,6 +77,15 @@ app.UseCors(corsBuilder => corsBuilder
 
 app.MapHealthChecks("/ready");
 app.MapHealthChecks("/app-health/minigamerouter/readyz");
+
+// Configure the Prometheus scraping endpoint
+app.UseRouting();
+#pragma warning disable ASP0014
+app.UseEndpoints(endPoints => endPoints.MapMetrics());
+#pragma warning restore ASP0014
+app.UseMetricServer();
+
+app.UseHttpMetrics();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
