@@ -6,6 +6,7 @@ using MiniGameRouter.Helper;
 using MiniGameRouter.Models;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Shared.Models;
+using Prometheus;
 
 namespace MiniGameRouter.Services;
 
@@ -14,6 +15,14 @@ public sealed class HealthCheckService : BackgroundService
     private readonly TimeSpan _checkTimeout = TimeSpan.FromSeconds(15);
     private readonly ConcurrentDictionary<string, HealthCheckEntry> _entries = new();
     private readonly IServiceScopeFactory _scopeFactory;
+    
+    private static readonly Gauge CurrentHealthyServicesCount = Metrics.CreateGauge(
+        "minigame_router_healthy_services_count",
+        "Current healthy services count");
+    
+    private static readonly Gauge CurrentUnhealthyServicesCount = Metrics.CreateGauge(
+        "minigame_router_unhealthy_services_count",
+        "Current unhealthy services count");
 
     public HealthCheckService(IServiceScopeFactory scopeFactory)
     {
@@ -74,8 +83,16 @@ public sealed class HealthCheckService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            var healthyCount = 0;
+            var unhealthyCount = 0;
+            
             foreach (var entry in _entries.Values)
             {
+                if (entry.AverageStatus == ServiceStatus.Green)
+                    healthyCount++;
+                else
+                    unhealthyCount++;
+                
                 if (entry.LastCheckUtc.Add(_checkTimeout) >= DateTime.UtcNow) continue;
 
                 var status = new HealthCheckStatus
@@ -86,6 +103,9 @@ public sealed class HealthCheckService : BackgroundService
 
                 await entry.AddCheckAsync(status, cache);
             }
+            
+            CurrentHealthyServicesCount.Set(healthyCount);
+            CurrentUnhealthyServicesCount.Set(unhealthyCount);
 
             await Task.Delay(_checkTimeout, stoppingToken);
         }

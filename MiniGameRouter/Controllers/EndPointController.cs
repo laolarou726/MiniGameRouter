@@ -8,6 +8,7 @@ using MiniGameRouter.Models.DB;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Services.RoutingServices;
 using MiniGameRouter.Shared.Models;
+using Prometheus;
 using HealthCheckService = MiniGameRouter.Services.HealthCheckService;
 
 namespace MiniGameRouter.Controllers;
@@ -24,6 +25,30 @@ public sealed class EndPointController : Controller
     private readonly HealthCheckService _healthCheckService;
     private readonly ILogger _logger;
     private readonly NodeWeightedRouteService _weightedRouteService;
+    
+    private static readonly Gauge EndPointCounter = Metrics.CreateGauge(
+        "minigame_router_endpoints_total",
+        "Total number of endpoints");
+    
+    private static readonly Histogram EndPointGetDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_get_duration",
+        "Duration of getting endpoints",
+        new HistogramConfiguration
+        {
+            LabelNames = new[] { "mode" }
+        });
+    
+    private static readonly Histogram EndPointCreateDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_create_duration",
+        "Duration of creating endpoints");
+    
+    private static readonly Histogram EndPointEditDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_edit_duration",
+        "Duration of editing endpoints");
+    
+    private static readonly Histogram EndPointDeleteDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_delete_duration",
+        "Duration of deleting endpoints");
 
     public EndPointController(
         IConfiguration configuration,
@@ -117,32 +142,35 @@ public sealed class EndPointController : Controller
     [HttpGet("get/{id:guid}")]
     public async Task<IActionResult> GetAsync([FromRoute] Guid id)
     {
-        var idStr = id.ToString("N");
-        var cached = await _cache.GetAsync<EndPointRecord>(idStr);
+        using (EndPointGetDuration.WithLabels("id").NewTimer())
+        {
+            var idStr = id.ToString("N");
+            var cached = await _cache.GetAsync<EndPointRecord>(idStr);
 
-        if (cached is not null)
-            return await CheckHealthStatusAndReturn(cached);
+            if (cached is not null)
+                return await CheckHealthStatusAndReturn(cached);
 
-        var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
 
-        if (found == null) return NotFound();
+            if (found == null) return NotFound();
 
-        var record = new EndPointRecord(
-            found.Id,
-            found.ServiceName,
-            found.TargetEndPoint,
-            found.Weight ?? 0,
-            found.TimeoutInMilliseconds,
-            found.IsValid);
+            var record = new EndPointRecord(
+                found.Id,
+                found.ServiceName,
+                found.TargetEndPoint,
+                found.Weight ?? 0,
+                found.TimeoutInMilliseconds,
+                found.IsValid);
 
-        await _cache.SetAsync(idStr, record);
+            await _cache.SetAsync(idStr, record);
 
-        _logger.LogInformation(
-            "Client [{Addr}] got mapping using ID [{Id}]",
-            Request.HttpContext.Connection.RemoteIpAddress,
-            idStr);
+            _logger.LogInformation(
+                "Client [{Addr}] got mapping using ID [{Id}]",
+                Request.HttpContext.Connection.RemoteIpAddress,
+                idStr);
 
-        return await CheckHealthStatusAndReturn(record);
+            return await CheckHealthStatusAndReturn(record);
+        }
     }
 
     [HttpGet("get/{serviceName}")]
@@ -159,120 +187,134 @@ public sealed class EndPointController : Controller
 
         if (modePairVal.ModeStr == "Random")
         {
-            var rand = _weightedRouteService.GetRandom(serviceName);
-
-            if (rand == null)
+            using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
             {
-                var fetched = await PrefetchCacheAsync(
-                    serviceName,
-                    _weightedRouteService,
-                    s => ((NodeWeightedRouteService)s).GetRandom(serviceName));
+                var rand = _weightedRouteService.GetRandom(serviceName);
 
-                if (fetched == null) return NotFound();
+                if (rand == null)
+                {
+                    var fetched = await PrefetchCacheAsync(
+                        serviceName,
+                        _weightedRouteService,
+                        s => ((NodeWeightedRouteService)s).GetRandom(serviceName));
 
-                return await CheckHealthStatusAndReturn(fetched);
+                    if (fetched == null) return NotFound();
+
+                    return await CheckHealthStatusAndReturn(fetched);
+                }
+
+                _logger.LogInformation(
+                    "Client [{Addr}] got random mapping to [{EndPoint}] using service [{Service}]",
+                    Request.HttpContext.Connection.RemoteIpAddress,
+                    rand.EndPoint,
+                    serviceName);
+
+                return await CheckHealthStatusAndReturn(rand);
             }
-
-            _logger.LogInformation(
-                "Client [{Addr}] got random mapping to [{EndPoint}] using service [{Service}]",
-                Request.HttpContext.Connection.RemoteIpAddress,
-                rand.EndPoint,
-                serviceName);
-
-            return await CheckHealthStatusAndReturn(rand);
         }
 
         if (modePairVal.ModeStr == "Weighted")
         {
-            var weighted = _weightedRouteService.Get(serviceName);
+            using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
+            {
+                var weighted = _weightedRouteService.Get(serviceName);
 
-            if (weighted == null)
+                if (weighted == null)
+                {
+                    var fetched = await PrefetchCacheAsync(
+                        serviceName,
+                        _weightedRouteService,
+                        s => s.Get(serviceName, null!));
+
+                    if (fetched == null) return NotFound();
+
+                    return await CheckHealthStatusAndReturn(fetched);
+                }
+
+                _logger.LogInformation(
+                    "Client [{Addr}] got weighted mapping to [{EndPoint}] using service [{Service}]",
+                    Request.HttpContext.Connection.RemoteIpAddress,
+                    weighted.EndPoint,
+                    serviceName);
+
+                return await CheckHealthStatusAndReturn(weighted);
+            }
+        }
+
+        using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
+        {
+            if (string.IsNullOrEmpty(modePairVal.HashKey))
+                return BadRequest("Invalid hash key");
+
+            var hashed = _hashRouteService.Get(serviceName, modePairVal.HashKey);
+
+            if (hashed == null)
             {
                 var fetched = await PrefetchCacheAsync(
                     serviceName,
-                    _weightedRouteService,
-                    s => s.Get(serviceName, null!));
+                    _hashRouteService,
+                    s => s.Get(serviceName, modePairVal.HashKey));
 
                 if (fetched == null) return NotFound();
 
-                return await CheckHealthStatusAndReturn(fetched);
+                hashed = fetched;
             }
 
             _logger.LogInformation(
-                "Client [{Addr}] got weighted mapping to [{EndPoint}] using service [{Service}]",
+                "Client [{Addr}] got hashed mapping to [{EndPoint}] using service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
-                weighted.EndPoint,
+                hashed.EndPoint,
                 serviceName);
 
-            return await CheckHealthStatusAndReturn(weighted);
+            return await CheckHealthStatusAndReturn(hashed);
         }
-
-        if (string.IsNullOrEmpty(modePairVal.HashKey))
-            return BadRequest("Invalid hash key");
-
-        var hashed = _hashRouteService.Get(serviceName, modePairVal.HashKey);
-
-        if (hashed == null)
-        {
-            var fetched = await PrefetchCacheAsync(
-                serviceName,
-                _hashRouteService,
-                s => s.Get(serviceName, modePairVal.HashKey));
-
-            if (fetched == null) return NotFound();
-
-            hashed = fetched;
-        }
-
-        _logger.LogInformation(
-            "Client [{Addr}] got hashed mapping to [{EndPoint}] using service [{Service}]",
-            Request.HttpContext.Connection.RemoteIpAddress,
-            hashed.EndPoint,
-            serviceName);
-
-        return await CheckHealthStatusAndReturn(hashed);
     }
 
     [HttpPost("create")]
     public async Task<IActionResult> CreateAsync(
         [FromBody] EndPointMappingRequestModel model)
     {
-        if (string.IsNullOrEmpty(model.ServiceName) ||
-            string.IsNullOrEmpty(model.TargetEndPoint))
-            return BadRequest("Invalid model");
-
-        var anyExists = await _endPointMappingContext.EndPoints
-            .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
-                           e.TargetEndPoint == model.TargetEndPoint);
-
-        if (anyExists) return BadRequest("Mapping already exists");
-
-        var record = new EndPointMappingModel
+        using (EndPointCreateDuration.NewTimer())
         {
-            ServiceName = model.ServiceName,
-            Weight = model.Weight,
-            TargetEndPoint = model.TargetEndPoint,
-            TimeoutInMilliseconds = model.TimeoutInMilliseconds,
-            IsValid = true
-        };
+            if (string.IsNullOrEmpty(model.ServiceName) ||
+                string.IsNullOrEmpty(model.TargetEndPoint))
+                return BadRequest("Invalid model");
 
-        await _endPointMappingContext.EndPoints.AddAsync(record);
-        await _endPointMappingContext.SaveChangesAsync();
+            var anyExists = await _endPointMappingContext.EndPoints
+                .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
+                               e.TargetEndPoint == model.TargetEndPoint);
+
+            if (anyExists) return BadRequest("Mapping already exists");
+
+            var record = new EndPointMappingModel
+            {
+                ServiceName = model.ServiceName,
+                Weight = model.Weight,
+                TargetEndPoint = model.TargetEndPoint,
+                TimeoutInMilliseconds = model.TimeoutInMilliseconds,
+                IsValid = true
+            };
+
+            await _endPointMappingContext.EndPoints.AddAsync(record);
+            await _endPointMappingContext.SaveChangesAsync();
         
-        _logger.LogInformation(
-            "Client [{Addr}] created mapping for service [{Service}]",
-            Request.HttpContext.Connection.RemoteIpAddress,
-            model.ServiceName);
+            _logger.LogInformation(
+                "Client [{Addr}] created mapping for service [{Service}]",
+                Request.HttpContext.Connection.RemoteIpAddress,
+                model.ServiceName);
+        
+            EndPointCounter.Inc();
 
-        var result = new EndPointRecord(
-            record.Id,
-            record.ServiceName,
-            record.TargetEndPoint,
-            record.Weight ?? 1,
-            record.TimeoutInMilliseconds,
-            record.IsValid);
+            var result = new EndPointRecord(
+                record.Id,
+                record.ServiceName,
+                record.TargetEndPoint,
+                record.Weight ?? 1,
+                record.TimeoutInMilliseconds,
+                record.IsValid);
 
-        return Ok(result);
+            return Ok(result);
+        }
     }
 
     [HttpPut("edit/{id:guid}")]
@@ -280,74 +322,82 @@ public sealed class EndPointController : Controller
         [FromBody] EndPointMappingRequestModel model,
         [FromRoute] Guid id)
     {
-        var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+        using (EndPointEditDuration.NewTimer())
+        {
+            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
 
-        if (found == null) return NotFound();
+            if (found == null) return NotFound();
 
-        if (!string.IsNullOrEmpty(model.ServiceName))
-            found.ServiceName = model.ServiceName;
-        if (!string.IsNullOrEmpty(model.TargetEndPoint))
-            found.TargetEndPoint = model.TargetEndPoint;
-        found.Weight = model.Weight;
-        found.TimeoutInMilliseconds = model.TimeoutInMilliseconds;
+            if (!string.IsNullOrEmpty(model.ServiceName))
+                found.ServiceName = model.ServiceName;
+            if (!string.IsNullOrEmpty(model.TargetEndPoint))
+                found.TargetEndPoint = model.TargetEndPoint;
+            found.Weight = model.Weight;
+            found.TimeoutInMilliseconds = model.TimeoutInMilliseconds;
 
-        var record = new EndPointRecord(
-            found.Id,
-            found.ServiceName,
-            found.TargetEndPoint,
-            found.Weight ?? 0,
-            found.TimeoutInMilliseconds,
-            found.IsValid);
+            var record = new EndPointRecord(
+                found.Id,
+                found.ServiceName,
+                found.TargetEndPoint,
+                found.Weight ?? 0,
+                found.TimeoutInMilliseconds,
+                found.IsValid);
 
-        _hashRouteService.RemoveNode(record);
-        _weightedRouteService.RemoveNode(record);
-        _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
+            _hashRouteService.RemoveNode(record);
+            _weightedRouteService.RemoveNode(record);
+            _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
 
-        var cacheKey = HealthCheckService.GetServiceName(found);
-        await _cache.RemoveAsync(cacheKey);
+            var cacheKey = HealthCheckService.GetServiceName(found);
+            await _cache.RemoveAsync(cacheKey);
 
-        _endPointMappingContext.EndPoints.Update(found);
-        await _endPointMappingContext.SaveChangesAsync();
+            _endPointMappingContext.EndPoints.Update(found);
+            await _endPointMappingContext.SaveChangesAsync();
         
-        _logger.LogInformation(
-            "Client [{Addr}] edited mapping for service [{Service}]",
-            Request.HttpContext.Connection.RemoteIpAddress,
-            model.ServiceName);
+            _logger.LogInformation(
+                "Client [{Addr}] edited mapping for service [{Service}]",
+                Request.HttpContext.Connection.RemoteIpAddress,
+                model.ServiceName);
 
-        return Ok();
+            return Ok();
+        }
     }
 
     [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> DeleteAsync(
         [FromRoute] Guid id)
     {
-        var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+        using (EndPointDeleteDuration.NewTimer())
+        {
+            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
 
-        if (found == null) return NotFound();
+            if (found == null) return NotFound();
 
-        var record = new EndPointRecord(
-            found.Id,
-            found.ServiceName,
-            found.TargetEndPoint,
-            found.Weight ?? 0,
-            found.TimeoutInMilliseconds,
-            found.IsValid);
+            var record = new EndPointRecord(
+                found.Id,
+                found.ServiceName,
+                found.TargetEndPoint,
+                found.Weight ?? 0,
+                found.TimeoutInMilliseconds,
+                found.IsValid);
 
-        _hashRouteService.RemoveNode(record);
-        _weightedRouteService.RemoveNode(record);
-        _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
+            _hashRouteService.RemoveNode(record);
+            _weightedRouteService.RemoveNode(record);
+            _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
 
-        var cacheKey = HealthCheckService.GetServiceName(found);
-        await _cache.RemoveAsync(cacheKey);
+            var cacheKey = HealthCheckService.GetServiceName(found);
+            await _cache.RemoveAsync(cacheKey);
 
-        _endPointMappingContext.EndPoints.Remove(found);
-        await _endPointMappingContext.SaveChangesAsync();
+            _endPointMappingContext.EndPoints.Remove(found);
+            await _endPointMappingContext.SaveChangesAsync();
         
-        _logger.LogInformation(
-            "Client [{Addr}] deleted mapping for service [{Service}]",
-            Request.HttpContext.Connection.RemoteIpAddress,
-            found.ServiceName);
+            _logger.LogInformation(
+                "Client [{Addr}] deleted mapping for service [{Service}]",
+                Request.HttpContext.Connection.RemoteIpAddress,
+                found.ServiceName);
+        
+            EndPointCounter.Dec();
 
-        return Ok();
+            return Ok();
+        }
     }
 }
