@@ -13,8 +13,8 @@ namespace MiniGameRouter.SDK.Services;
 public class EndPointService : IEndPointService
 {
     private readonly ServiceHealthManager _healthManager;
-    private readonly HttpClient _httpClient;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
 
     public EndPointService(
@@ -84,7 +84,7 @@ public class EndPointService : IEndPointService
         const string url = "/EndPoint/create";
 
         if (timeoutInMilliseconds <= 0)
-            timeoutInMilliseconds = (int) TimeSpan.FromMinutes(5).TotalMilliseconds;
+            timeoutInMilliseconds = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 
         var reqModel = new EndPointMappingRequestModel
         {
@@ -114,13 +114,13 @@ public class EndPointService : IEndPointService
         res.EnsureSuccessStatusCode();
 
         var createdRecord = await res.Content.ReadFromJsonAsync<EndPointRecord>();
-        
+
         if (createdRecord == null)
         {
             _logger.LogError("Failed to create endpoint [{endPoint}].", reqModel);
             return null;
         }
-        
+
         _healthManager.AddOrUpdateEndPoint(createdRecord);
 
         return createdRecord.Id;
@@ -162,7 +162,7 @@ public class EndPointService : IEndPointService
         }
 
         res.EnsureSuccessStatusCode();
-        
+
         _healthManager.RemoveEndPoint(id);
 
         return true;

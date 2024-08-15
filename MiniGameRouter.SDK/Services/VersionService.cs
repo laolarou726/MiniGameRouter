@@ -6,8 +6,8 @@ namespace MiniGameRouter.SDK.Services;
 
 public class VersionService : IVersionService
 {
-    private readonly HttpClient _httpClient;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
+    private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
 
     public VersionService(

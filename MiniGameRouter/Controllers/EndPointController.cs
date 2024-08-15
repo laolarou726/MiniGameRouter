@@ -17,6 +17,30 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class EndPointController : Controller
 {
+    private static readonly Gauge EndPointCounter = Metrics.CreateGauge(
+        "minigame_router_endpoints_total",
+        "Total number of endpoints");
+
+    private static readonly Histogram EndPointGetDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_get_duration",
+        "Duration of getting endpoints",
+        new HistogramConfiguration
+        {
+            LabelNames = new[] { "mode" }
+        });
+
+    private static readonly Histogram EndPointCreateDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_create_duration",
+        "Duration of creating endpoints");
+
+    private static readonly Histogram EndPointEditDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_edit_duration",
+        "Duration of editing endpoints");
+
+    private static readonly Histogram EndPointDeleteDuration = Metrics.CreateHistogram(
+        "minigame_router_endpoints_delete_duration",
+        "Duration of deleting endpoints");
+
     private readonly IDistributedCache _cache;
 
     private readonly EndPointMappingContext _endPointMappingContext;
@@ -25,30 +49,6 @@ public sealed class EndPointController : Controller
     private readonly HealthCheckService _healthCheckService;
     private readonly ILogger _logger;
     private readonly NodeWeightedRouteService _weightedRouteService;
-    
-    private static readonly Gauge EndPointCounter = Metrics.CreateGauge(
-        "minigame_router_endpoints_total",
-        "Total number of endpoints");
-    
-    private static readonly Histogram EndPointGetDuration = Metrics.CreateHistogram(
-        "minigame_router_endpoints_get_duration",
-        "Duration of getting endpoints",
-        new HistogramConfiguration
-        {
-            LabelNames = new[] { "mode" }
-        });
-    
-    private static readonly Histogram EndPointCreateDuration = Metrics.CreateHistogram(
-        "minigame_router_endpoints_create_duration",
-        "Duration of creating endpoints");
-    
-    private static readonly Histogram EndPointEditDuration = Metrics.CreateHistogram(
-        "minigame_router_endpoints_edit_duration",
-        "Duration of editing endpoints");
-    
-    private static readonly Histogram EndPointDeleteDuration = Metrics.CreateHistogram(
-        "minigame_router_endpoints_delete_duration",
-        "Duration of deleting endpoints");
 
     public EndPointController(
         IConfiguration configuration,
@@ -103,7 +103,7 @@ public sealed class EndPointController : Controller
 
         return Ok(endPointRecord);
     }
-    
+
     [HttpGet("list/{count:int}")]
     public async Task<IActionResult> ListAsync([FromRoute] int count)
     {
@@ -121,7 +121,7 @@ public sealed class EndPointController : Controller
 
         return Ok(services);
     }
-    
+
     [HttpGet("list/all")]
     public async Task<IActionResult> ListAllAsync()
     {
@@ -150,7 +150,7 @@ public sealed class EndPointController : Controller
             if (cached is not null)
                 return await CheckHealthStatusAndReturn(cached);
 
-            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
 
             if (found == null) return NotFound();
 
@@ -186,7 +186,6 @@ public sealed class EndPointController : Controller
         var modePairVal = modePair.Value;
 
         if (modePairVal.ModeStr == "Random")
-        {
             using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
             {
                 var rand = _weightedRouteService.GetRandom(serviceName);
@@ -211,10 +210,8 @@ public sealed class EndPointController : Controller
 
                 return await CheckHealthStatusAndReturn(rand);
             }
-        }
 
         if (modePairVal.ModeStr == "Weighted")
-        {
             using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
             {
                 var weighted = _weightedRouteService.Get(serviceName);
@@ -239,7 +236,6 @@ public sealed class EndPointController : Controller
 
                 return await CheckHealthStatusAndReturn(weighted);
             }
-        }
 
         using (EndPointGetDuration.WithLabels(modePairVal.ModeStr).NewTimer())
         {
@@ -297,12 +293,12 @@ public sealed class EndPointController : Controller
 
             await _endPointMappingContext.EndPoints.AddAsync(record);
             await _endPointMappingContext.SaveChangesAsync();
-        
+
             _logger.LogInformation(
                 "Client [{Addr}] created mapping for service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 model.ServiceName);
-        
+
             EndPointCounter.Inc();
 
             var result = new EndPointRecord(
@@ -324,7 +320,7 @@ public sealed class EndPointController : Controller
     {
         using (EndPointEditDuration.NewTimer())
         {
-            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
 
             if (found == null) return NotFound();
 
@@ -352,7 +348,7 @@ public sealed class EndPointController : Controller
 
             _endPointMappingContext.EndPoints.Update(found);
             await _endPointMappingContext.SaveChangesAsync();
-        
+
             _logger.LogInformation(
                 "Client [{Addr}] edited mapping for service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
@@ -368,7 +364,7 @@ public sealed class EndPointController : Controller
     {
         using (EndPointDeleteDuration.NewTimer())
         {
-            var found = await _endPointMappingContext.EndPoints.FindAsync([id]);
+            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
 
             if (found == null) return NotFound();
 
@@ -389,12 +385,12 @@ public sealed class EndPointController : Controller
 
             _endPointMappingContext.EndPoints.Remove(found);
             await _endPointMappingContext.SaveChangesAsync();
-        
+
             _logger.LogInformation(
                 "Client [{Addr}] deleted mapping for service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 found.ServiceName);
-        
+
             EndPointCounter.Dec();
 
             return Ok();

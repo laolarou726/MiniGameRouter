@@ -7,18 +7,18 @@ namespace MiniGameRouter.SDK.Providers;
 
 public class ServerConfigurationProvider : IServerConfigurationProvider
 {
-    public MiniGameRouterOptions Options { get; init; }
-
     public ServerConfigurationProvider(
         IConfiguration configuration,
         ILogger<ServerConfigurationProvider> logger)
     {
         var options = configuration.GetSection("MiniGameRouter").Get<MiniGameRouterOptions>();
-        
+
         ArgumentNullException.ThrowIfNull(options);
-        
+
         logger.LogInformation("Server configuration manager initialized.");
-        
+
         Options = options;
     }
+
+    public MiniGameRouterOptions Options { get; init; }
 }

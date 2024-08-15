@@ -10,12 +10,12 @@ namespace MiniGameRouter.Benchmark.Benchmarks;
 [Config(typeof(DefaultConfig))]
 public class StreamCopyBenchmark
 {
-    private byte[] _data = null!;
-    private ReadOnlyMemory<byte> _mem = null!;
-    private Stream _existStream = null!;
     private static readonly RecyclableMemoryStreamManager Manager1 = new();
     private static readonly RecyclableMemoryStreamManager Manager2 = new();
     private static readonly RecyclableMemoryStreamManager Manager3 = new();
+    private byte[] _data = null!;
+    private Stream _existStream = null!;
+    private ReadOnlyMemory<byte> _mem = null!;
 
     [Params(50, 100, 1000, 10000, 100000)] public int N;
 
@@ -41,7 +41,7 @@ public class StreamCopyBenchmark
     public void BytesCopyAsync()
     {
         var to = ArrayPool<byte>.Shared.Rent(N);
-        
+
         Array.Copy(_data, to, N);
     }
 
@@ -69,7 +69,7 @@ public class StreamCopyBenchmark
     {
         var underlyingStream = _mem.AsStream();
         await using var to = Manager3.GetStream();
-        
+
         await underlyingStream.CopyToAsync(to);
     }
 

@@ -41,7 +41,7 @@ public class ServiceHealthManager : BackgroundService
                     "HealthCheck for [{service}] at [{endPoint}] failed.",
                     endPoint.ServiceName,
                     endPoint.EndPoint);
-                
+
                 continue;
             }
 

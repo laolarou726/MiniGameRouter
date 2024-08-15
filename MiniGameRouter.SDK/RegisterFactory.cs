@@ -38,9 +38,9 @@ public static class RegisterFactory
         IConfiguration configuration)
     {
         var options = configuration.GetSection("MiniGameRouter").Get<MiniGameRouterOptions>();
-        
+
         ArgumentNullException.ThrowIfNull(options);
-        
+
         services
             .AddHttpClient<IEndPointService, EndPointService>(client =>
             {
@@ -79,7 +79,7 @@ public static class RegisterFactory
     {
         services.AddSingleton<IAcceptor<TcpSession>, TcpAcceptor>();
         services.AddSingleton<IConnector<TcpSession>, TcpConnector>();
-        
+
         return services;
     }
 }

@@ -10,11 +10,11 @@ public class EndPointInfoHelper
 {
     private readonly bool _isGuid;
     private readonly string _serviceName;
-    private RoutingMode? _routingMode;
-    private string? _hashKey;
-    
+
     private readonly IServiceScopeFactory _serviceScopeFactory;
-    
+    private string? _hashKey;
+    private RoutingMode? _routingMode;
+
     public EndPointInfoHelper(
         string serviceName,
         IServiceScopeFactory serviceScopeFactory)
@@ -22,7 +22,7 @@ public class EndPointInfoHelper
         _serviceName = serviceName;
         _serviceScopeFactory = serviceScopeFactory;
     }
-    
+
     public EndPointInfoHelper(
         Guid serviceId,
         IServiceScopeFactory serviceScopeFactory)
@@ -31,13 +31,13 @@ public class EndPointInfoHelper
         _serviceName = serviceId.ToString("N");
         _serviceScopeFactory = serviceScopeFactory;
     }
-    
+
     public EndPointInfoHelper WithRoutingMode(RoutingMode routingMode)
     {
         _routingMode = routingMode;
         return this;
     }
-    
+
     public EndPointInfoHelper WithHashKey(string hashKey)
     {
         _hashKey = hashKey;
@@ -48,24 +48,22 @@ public class EndPointInfoHelper
     {
         if (_isGuid && (_routingMode != null || !string.IsNullOrEmpty(_hashKey)))
             throw new Exception("Routing mode and hash key are not supported for GUID service ID.");
-        
+
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var endPointService = scope.ServiceProvider.GetRequiredService<EndPointService>();
 
         if (_isGuid)
             return await endPointService.GetEndPointAsync(new Guid(_serviceName));
-        
+
         var serverConfigProvider = scope.ServiceProvider.GetRequiredService<IServerConfigurationProvider>();
         var sessionHashIdProvider = scope.ServiceProvider.GetRequiredService<ISessionHashIdentityProvider>();
         var routingMode = RoutingMode.Random;
 
         if (_routingMode == null)
-        {
             routingMode = serverConfigProvider.Options
                 .EndPointRoutingConfigs
                 ?.GetValueOrDefault(_serviceName) ?? RoutingMode.Random;
-        }
-        
+
         var hashId = _hashKey;
 
         if (routingMode == RoutingMode.Hashed &&
@@ -74,16 +72,16 @@ public class EndPointInfoHelper
             var definedHash = sessionHashIdProvider
                 .ServiceHashes
                 ?.GetValueOrDefault(_serviceName);
-            
+
             if (string.IsNullOrEmpty(definedHash))
                 throw new Exception("Hash key is required for hashed routing mode.");
         }
 
         return routingMode switch
         {
-            RoutingMode.Random => await endPointService.GetEndPointAsync(_serviceName, RoutingMode.Random, null),
+            RoutingMode.Random => await endPointService.GetEndPointAsync(_serviceName, RoutingMode.Random),
             RoutingMode.Hashed => await endPointService.GetEndPointAsync(_serviceName, RoutingMode.Hashed, hashId),
-            RoutingMode.Weighted => await endPointService.GetEndPointAsync(_serviceName, RoutingMode.Weighted, null),
+            RoutingMode.Weighted => await endPointService.GetEndPointAsync(_serviceName, RoutingMode.Weighted),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

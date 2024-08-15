@@ -3,9 +3,9 @@ using MiniGameRouter.Benchmark.Benchmarks;
 
 namespace MiniGameRouter.Benchmark;
 
-class Program
+internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         BenchmarkRunner.Run<StreamCopyBenchmark>();
     }

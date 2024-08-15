@@ -29,7 +29,7 @@ public sealed class HealthCheckController : Controller
         _cache = cache;
         _logger = logger;
     }
-    
+
     [HttpGet("status")]
     public IActionResult Status()
     {
@@ -60,13 +60,13 @@ public sealed class HealthCheckController : Controller
         };
 
         await _healthCheckService.AddCheckAsync(model, statusHistory, _cache);
-        
+
         _logger.LogInformation(
             "Service [{service}] reported its status as [{status}] at [{endPoint}].",
             model.ServiceName,
             model.Status,
             model.EndPoint);
-        
+
         return Ok();
     }
 }
