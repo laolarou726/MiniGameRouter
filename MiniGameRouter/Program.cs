@@ -37,6 +37,7 @@ var connectionStr = builder.Configuration.GetConnectionString("DefaultMongoConne
                     "mongodb://localhost:27017";
 
 builder.Services.AddDbContext<EndPointMappingContext>(options => options.UseMongoDB(connectionStr, mongoDatabaseName));
+builder.Services.AddDbContext<DynamicRoutingMappingContext>(options => options.UseMongoDB(connectionStr, mongoDatabaseName));
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -60,6 +61,7 @@ builder.Services.AddSingleton<NodeWeightedRouteService>();
 builder.Services.AddSingleton<HealthCheckService>();
 
 builder.Services.AddHostedService(sP => sP.GetRequiredService<HealthCheckService>());
+builder.Services.AddHostedService<LegacyEndPointMappingCleanupService>();
 
 Log.Information("Starting MiniGameRouter...");
 Log.Information("[GC] IsServer={0} LatencyMode={1} LargeObjectHeapCompactionMode={2}",

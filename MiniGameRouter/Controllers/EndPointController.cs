@@ -26,7 +26,7 @@ public sealed class EndPointController : Controller
         "Duration of getting endpoints",
         new HistogramConfiguration
         {
-            LabelNames = new[] { "mode" }
+            LabelNames = ["mode"]
         });
 
     private static readonly Histogram EndPointCreateDuration = Metrics.CreateHistogram(
@@ -165,7 +165,7 @@ public sealed class EndPointController : Controller
             await _cache.SetAsync(idStr, record);
 
             _logger.LogInformation(
-                "Client [{Addr}] got mapping using ID [{Id}]",
+                "Client [{Address}] got mapping using ID [{Id}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 idStr);
 
@@ -203,7 +203,7 @@ public sealed class EndPointController : Controller
                 }
 
                 _logger.LogInformation(
-                    "Client [{Addr}] got random mapping to [{EndPoint}] using service [{Service}]",
+                    "Client [{Address}] got random mapping to [{EndPoint}] using service [{Service}]",
                     Request.HttpContext.Connection.RemoteIpAddress,
                     rand.EndPoint,
                     serviceName);
@@ -229,7 +229,7 @@ public sealed class EndPointController : Controller
                 }
 
                 _logger.LogInformation(
-                    "Client [{Addr}] got weighted mapping to [{EndPoint}] using service [{Service}]",
+                    "Client [{Address}] got weighted mapping to [{EndPoint}] using service [{Service}]",
                     Request.HttpContext.Connection.RemoteIpAddress,
                     weighted.EndPoint,
                     serviceName);
@@ -257,7 +257,7 @@ public sealed class EndPointController : Controller
             }
 
             _logger.LogInformation(
-                "Client [{Addr}] got hashed mapping to [{EndPoint}] using service [{Service}]",
+                "Client [{Address}] got hashed mapping to [{EndPoint}] using service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 hashed.EndPoint,
                 serviceName);
@@ -288,6 +288,7 @@ public sealed class EndPointController : Controller
                 Weight = model.Weight,
                 TargetEndPoint = model.TargetEndPoint,
                 TimeoutInMilliseconds = model.TimeoutInMilliseconds,
+                CreateTimeUtc = DateTime.UtcNow,
                 IsValid = true
             };
 
@@ -295,7 +296,7 @@ public sealed class EndPointController : Controller
             await _endPointMappingContext.SaveChangesAsync();
 
             _logger.LogInformation(
-                "Client [{Addr}] created mapping for service [{Service}]",
+                "Client [{Address}] created mapping for service [{Service}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 model.ServiceName);
 

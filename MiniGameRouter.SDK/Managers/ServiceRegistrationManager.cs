@@ -8,14 +8,17 @@ public class ServiceRegistrationManager : IHostedService
 {
     private readonly IServerConfigurationProvider _configuration;
     private readonly List<Guid> _endPointIds = [];
+    private readonly IVersionService _versionService;
     private readonly IEndPointService _endPointService;
     private readonly ILogger _logger;
 
     public ServiceRegistrationManager(
+        IVersionService versionService,
         IEndPointService endPointService,
         IServerConfigurationProvider configurationProvider,
         ILogger<ServiceRegistrationManager> logger)
     {
+        _versionService = versionService;
         _endPointService = endPointService;
         _configuration = configurationProvider;
         _logger = logger;
@@ -30,6 +33,10 @@ public class ServiceRegistrationManager : IHostedService
             _logger.LogWarning("No end points found in configuration.");
             return;
         }
+
+        var version = await _versionService.GetApiVersionAsync();
+
+        _logger.LogInformation("Service version is {version}.", version);
 
         var endPoints = _configuration.Options.EndPointMappings.Values
             .SelectMany(v => v)
