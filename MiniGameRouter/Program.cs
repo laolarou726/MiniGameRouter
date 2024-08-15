@@ -80,6 +80,7 @@ app.MapHealthChecks("/app-health/minigamerouter/readyz");
 
 // Configure the Prometheus scraping endpoint
 app.UseRouting();
+app.UseAuthorization();
 #pragma warning disable ASP0014
 app.UseEndpoints(endPoints => endPoints.MapMetrics());
 #pragma warning restore ASP0014
@@ -95,9 +96,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
