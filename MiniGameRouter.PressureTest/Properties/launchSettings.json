@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MiniGameRouter.PressureTest": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
