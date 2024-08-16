@@ -35,8 +35,6 @@ public class LegacyEndPointMappingCleanupService : BackgroundService
 
             var mappings = await context.EndPoints
                 .AsNoTrackingWithIdentityResolution()
-                .Include(e => e.TargetEndPoint)
-                .Include(e => e.ServiceName)
                 .Where(e => (DateTime.UtcNow - e.CreateTimeUtc).TotalMinutes >= 10)
                 .ToListAsync(stoppingToken);
 
