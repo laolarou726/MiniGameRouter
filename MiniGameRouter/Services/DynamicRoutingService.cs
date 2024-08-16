@@ -14,16 +14,16 @@ public class DynamicRoutingService
     private readonly ConcurrentDictionary<string, List<string>> _cacheMappings = [];
 
     private readonly IDistributedCache _cache;
-    private readonly DynamicRoutingMappingContext _dynamicRoutingMappingContext;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger _logger;
 
     public DynamicRoutingService(
         IDistributedCache cache,
-        DynamicRoutingMappingContext dynamicRoutingMappingContext,
+        IServiceScopeFactory serviceScopeFactory,
         ILogger<DynamicRoutingService> logger)
     {
         _cache = cache;
-        _dynamicRoutingMappingContext = dynamicRoutingMappingContext;
+        _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
     }
 
@@ -41,7 +41,10 @@ public class DynamicRoutingService
         if (!string.IsNullOrEmpty(cachedMapping))
             return cachedMapping;
 
-        var match = await _dynamicRoutingMappingContext.DynamicRoutingMappings
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
+
+        var match = await context.DynamicRoutingMappings
             .Where(m => loweredRawStr.StartsWith(m.MatchPrefix.ToLower()))
             .OrderBy(m => m.MatchPrefix.Length)
             .LastOrDefaultAsync();
@@ -64,7 +67,10 @@ public class DynamicRoutingService
         if (string.IsNullOrEmpty(model.MatchPrefix) ||
             string.IsNullOrEmpty(model.TargetEndPoint)) return false;
 
-        var anyExist = await _dynamicRoutingMappingContext.DynamicRoutingMappings
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
+
+        var anyExist = await context.DynamicRoutingMappings
             .AnyAsync(m => m.MatchPrefix == model.MatchPrefix);
 
         if (anyExist)
@@ -93,15 +99,18 @@ public class DynamicRoutingService
             TargetEndPoint = model.TargetEndPoint
         };
 
-        await _dynamicRoutingMappingContext.DynamicRoutingMappings.AddAsync(mapping);
-        await _dynamicRoutingMappingContext.SaveChangesAsync();
+        await context.DynamicRoutingMappings.AddAsync(mapping);
+        await context.SaveChangesAsync();
 
         return true;
     }
 
     public async Task<bool> TryRemoveMappingAsync(Guid id)
     {
-        var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings.FindAsync(id);
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
+
+        var record = await context.DynamicRoutingMappings.FindAsync(id);
 
         if (record == null) return false;
 
@@ -115,8 +124,8 @@ public class DynamicRoutingService
             }
         }
 
-        _dynamicRoutingMappingContext.DynamicRoutingMappings.Remove(record);
-        await _dynamicRoutingMappingContext.SaveChangesAsync();
+        context.DynamicRoutingMappings.Remove(record);
+        await context.SaveChangesAsync();
 
         return true;
     }
