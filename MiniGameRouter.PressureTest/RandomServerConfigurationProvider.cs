@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using MiniGameRouter.SDK.Interfaces;
 using MiniGameRouter.Shared.Models;
 using MiniGameRouter.Shared.Models.RoutingConfig;
@@ -16,7 +17,8 @@ public class RandomServerConfigurationProvider : IServerConfigurationProvider
     public MiniGameRouterOptions Options { get; }
 
     public RandomServerConfigurationProvider(
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<RandomServerConfigurationProvider> logger)
     {
         Options = new MiniGameRouterOptions
         {
@@ -26,9 +28,11 @@ public class RandomServerConfigurationProvider : IServerConfigurationProvider
 
         _serviceCount = configuration.GetValue("PressureTest:ServiceCount", DefaultServiceCount);
         _instanceCount = configuration.GetValue("PressureTest:InstanceCount", DefaultInstanceCount);
+
+        logger.LogInformation("ServiceCount={serverCount} InstanceCount={instanceCount}", _serviceCount, _instanceCount);
     }
 
-    private IReadOnlyDictionary<string, EndPointMappingRequestModel[]> GenerateEndPoints()
+    private Dictionary<string, EndPointMappingRequestModel[]> GenerateEndPoints()
     {
         var result = new Dictionary<string, EndPointMappingRequestModel[]>();
 
@@ -43,7 +47,7 @@ public class RandomServerConfigurationProvider : IServerConfigurationProvider
                     instances.Add(new EndPointMappingRequestModel
                     {
                         ServiceName = $"Service{serviceIndex}",
-                        TargetEndPoint = Guid.NewGuid().ToString(),
+                        TargetEndPoint = $"Instance{instanceIndex}",
                         TimeoutInMilliseconds = 3000,
                         Weight = 1
                     });

@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using CommunityToolkit.HighPerformance;
 using Hive.Both.General.Dispatchers;
 using Hive.Network.Abstractions;
 using Hive.Network.Abstractions.Session;
 using Hive.Network.Shared;
 using Hive.Network.Tcp;
-using Microsoft.Toolkit.HighPerformance;
 using MiniGameRouter.SideCar.Interfaces;
 
 namespace MiniGameRouter.SideCar;
@@ -167,8 +167,7 @@ public class SideCarServer : IHostedService
     {
         var ms = RecycleMemoryStreamManagerHolder.Shared.GetStream();
 
-        rawMessage.AsStream().CopyTo(ms);
-
+        await rawMessage.AsStream().CopyToAsync(ms);
         await FetchMappingAndSend(_clientServerIdMappings, session.Id, ms);
         await FetchMappingAndSend(_serverClientMappings, session.Id, ms);
     }
