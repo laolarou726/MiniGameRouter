@@ -33,9 +33,10 @@ public class LegacyEndPointMappingCleanupService : BackgroundService
         {
             _logger.LogInformation("Cleaning up legacy end point mappings");
 
+            var now = DateTime.UtcNow.AddMinutes(-10);
             var mappings = await context.EndPoints
                 .AsNoTrackingWithIdentityResolution()
-                .Where(e => (DateTime.UtcNow - e.CreateTimeUtc).TotalMinutes >= 10)
+                .Where(e => e.CreateTimeUtc < now)
                 .ToListAsync(stoppingToken);
 
             foreach (var mapping in mappings)
