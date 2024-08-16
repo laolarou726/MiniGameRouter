@@ -12,17 +12,20 @@ namespace MiniGameRouter.SDK.Services;
 
 public class EndPointService : IEndPointService
 {
+    private readonly ExtraEndPointManager _extraEndPointManager;
     private readonly ServiceHealthManager _healthManager;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly HttpClient _httpClient;
     private readonly ILogger _logger;
 
     public EndPointService(
+        ExtraEndPointManager extraEndPointManager,
         ServiceHealthManager healthManager,
         HttpClient httpClient,
         IHostApplicationLifetime hostApplicationLifetime,
         ILogger<EndPointService> logger)
     {
+        _extraEndPointManager = extraEndPointManager;
         _healthManager = healthManager;
         _httpClient = httpClient;
         _hostApplicationLifetime = hostApplicationLifetime;
@@ -79,7 +82,8 @@ public class EndPointService : IEndPointService
         string serviceName,
         string endPoint,
         uint weight = 1,
-        int timeoutInMilliseconds = 30000)
+        int timeoutInMilliseconds = 30000,
+        bool addToExtraManager = true)
     {
         const string url = "/EndPoint/create";
 
@@ -121,6 +125,8 @@ public class EndPointService : IEndPointService
             return null;
         }
 
+        if (addToExtraManager)
+            _extraEndPointManager.AddEndPoint(createdRecord.Id);
         _healthManager.AddOrUpdateEndPoint(createdRecord);
 
         return createdRecord.Id;
@@ -153,7 +159,7 @@ public class EndPointService : IEndPointService
         var uri = $"/EndPoint/delete/{id:N}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, uri);
-        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopped);
+        using var res = await _httpClient.SendAsync(req);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
@@ -164,6 +170,7 @@ public class EndPointService : IEndPointService
         res.EnsureSuccessStatusCode();
 
         _healthManager.RemoveEndPoint(id);
+        _extraEndPointManager.RemoveEndPoint(id);
 
         return true;
     }

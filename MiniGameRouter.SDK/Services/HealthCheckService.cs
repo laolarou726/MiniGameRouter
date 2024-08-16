@@ -41,7 +41,7 @@ public class HealthCheckService : IHealthCheckService
         using var req = new HttpRequestMessage(HttpMethod.Put, url);
         req.Content = JsonContent.Create(reqModel);
 
-        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopped);
+        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
             _logger.LogWarning(

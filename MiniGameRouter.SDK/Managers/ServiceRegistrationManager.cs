@@ -62,7 +62,8 @@ public class ServiceRegistrationManager : IHostedService
                 endPoint.ServiceName,
                 endPoint.TargetEndPoint,
                 endPoint.Weight ?? 1,
-                endPoint.TimeoutInMilliseconds);
+                endPoint.TimeoutInMilliseconds,
+                false);
 
             if (id == null)
             {
@@ -81,6 +82,10 @@ public class ServiceRegistrationManager : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Service registration manager stopping, waiting for 5 sec to fully collect...");
+
+        await Task.Delay(5000, CancellationToken.None);
+
         foreach (var endPointId in _endPointIds)
         {
             var result = await _endPointService.DeleteEndPointAsync(endPointId);

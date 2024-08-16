@@ -7,6 +7,8 @@ using Serilog;
 using System.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using MiniGameRouter.SDK;
+using MiniGameRouter.PressureTest.Services;
+using MiniGameRouter.PressureTest.Providers;
 
 namespace MiniGameRouter.PressureTest;
 
@@ -31,10 +33,18 @@ internal class Program
         builder.Configuration.AddEnvironmentVariables();
 
         builder.Services.AddSingleton<ServiceHealthManager>();
-        builder.Services.AddHostedService<ServiceRegistrationManager>();
+        builder.Services.AddSingleton<ExtraEndPointManager>();
+        
         builder.Services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
         builder.Services.AddSingleton<IServerConfigurationProvider, RandomServerConfigurationProvider>();
+
+        builder.Services.AddHostedService<ServiceRegistrationManager>();
         builder.Services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
+        builder.Services.AddHostedService(sC => sC.GetRequiredService<ExtraEndPointManager>());
+
+        builder.Services.AddSingleton<RandomServiceProvider>();
+        builder.Services.AddHostedService<RandomCreateAndDeleteService>();
+        builder.Services.AddHostedService<RandomUpdateService>();
 
         builder.Services
             .AddApiClients(builder.Configuration)

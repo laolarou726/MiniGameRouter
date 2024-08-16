@@ -22,10 +22,14 @@ public static class RegisterFactory
         IConfiguration configuration)
     {
         services.AddSingleton<ServiceHealthManager>();
-        services.AddHostedService<ServiceRegistrationManager>();
+        services.AddSingleton<ExtraEndPointManager>();
+        
         services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
         services.AddSingleton<IServerConfigurationProvider, ServerConfigurationProvider>();
+
+        services.AddHostedService<ServiceRegistrationManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
+        services.AddHostedService(sC => sC.GetRequiredService<ExtraEndPointManager>());
 
         return services
             .AddApiClients(configuration)

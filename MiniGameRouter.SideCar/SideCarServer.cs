@@ -52,8 +52,8 @@ public class SideCarServer : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var listenAddr = IPAddress.Parse(_sideCarOptionsProvider.Options.Listen.Address);
-        var listenEndPoint = new IPEndPoint(listenAddr, _sideCarOptionsProvider.Options.Listen.Port);
+        var listenAddress = IPAddress.Parse(_sideCarOptionsProvider.Options.Listen.Address);
+        var listenEndPoint = new IPEndPoint(listenAddress, _sideCarOptionsProvider.Options.Listen.Port);
 
         await _acceptor.SetupAsync(listenEndPoint, cancellationToken);
 
@@ -74,7 +74,7 @@ public class SideCarServer : IHostedService
     private async void AcceptorOnSessionCreated(IAcceptor acceptor, SessionId sessionId, TcpSession session)
     {
         _logger.LogInformation(
-            "New incoming session created, id [{id}] from [{addr}:{port}]",
+            "New incoming session created, id [{id}] from [{address}:{port}]",
             sessionId,
             session.RemoteEndPoint!.Address,
             session.RemoteEndPoint.Port);
@@ -87,7 +87,7 @@ public class SideCarServer : IHostedService
         if (serverSession == null)
         {
             _logger.LogError(
-                "Failed to connect to dest [{addr}:{port}] within [{timeout}], now closing downstream...",
+                "Failed to connect to dest [{address}:{port}] within [{timeout}], now closing downstream...",
                 _destEndPoint.Address,
                 _destEndPoint.Port,
                 _sideCarOptionsProvider.Options.DestMaxConnectionTimeout);
@@ -98,7 +98,7 @@ public class SideCarServer : IHostedService
             return;
         }
 
-        _logger.LogInformation("Connected to dest [{addr}:{port}] with session id [{id}]",
+        _logger.LogInformation("Connected to dest [{address}:{port}] with session id [{id}]",
             _destEndPoint.Address,
             _destEndPoint.Port,
             serverSession.Id);
@@ -155,7 +155,7 @@ public class SideCarServer : IHostedService
         {
             await session.SendAsync(stream);
 
-            _logger.LogInformation("Forwarded message from [{id}] to [{sessionId}] at [{addr}:{port}]",
+            _logger.LogInformation("Forwarded message from [{id}] to [{sessionId}] at [{address}:{port}]",
                 id,
                 sessionId,
                 session.RemoteEndPoint!.Address,

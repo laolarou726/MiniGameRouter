@@ -16,7 +16,8 @@ public interface IEndPointService
         string serviceName,
         string endPoint,
         uint weight = 1,
-        int timeoutInMilliseconds = 30000);
+        int timeoutInMilliseconds = 30000,
+        bool addToExtraManager = true);
 
     Task<bool> EditEndPointAsync(
         Guid id,

@@ -29,4 +29,8 @@
     <ProjectReference Include="..\MiniGameRouter.SDK\MiniGameRouter.SDK.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
