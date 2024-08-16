@@ -33,7 +33,7 @@ public static class RegisterFactory
             .UseTcpStack();
     }
 
-    private static IServiceCollection AddApiClients(
+    public static IServiceCollection AddApiClients(
         this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -65,7 +65,7 @@ public static class RegisterFactory
         return services;
     }
 
-    private static IServiceCollection AddHiveEssentials(this IServiceCollection services)
+    public static IServiceCollection AddHiveEssentials(this IServiceCollection services)
     {
         services.AddSingleton<ICustomCodecProvider, DefaultCustomCodecProvider>();
         services.AddSingleton<IPacketIdMapper, DefaultPacketIdMapper>();
@@ -75,7 +75,7 @@ public static class RegisterFactory
         return services;
     }
 
-    private static IServiceCollection UseTcpStack(this IServiceCollection services)
+    public static IServiceCollection UseTcpStack(this IServiceCollection services)
     {
         services.AddSingleton<IAcceptor<TcpSession>, TcpAcceptor>();
         services.AddSingleton<IConnector<TcpSession>, TcpConnector>();

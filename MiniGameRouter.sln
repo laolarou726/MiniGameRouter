@@ -1,32 +1,37 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter", "MiniGameRouter\MiniGameRouter.csproj", "{FA5245BB-DAAB-4D29-8D33-73A8230E6649}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGameRouter", "MiniGameRouter\MiniGameRouter.csproj", "{FA5245BB-DAAB-4D29-8D33-73A8230E6649}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.Shared", "MiniGameRouter.Shared\MiniGameRouter.Shared.csproj", "{489844CA-17F1-4049-B65F-98C32D0966AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGameRouter.Shared", "MiniGameRouter.Shared\MiniGameRouter.Shared.csproj", "{489844CA-17F1-4049-B65F-98C32D0966AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Both.General", "Hive.Framework\Hive.Both.General\Hive.Both.General.csproj", "{D56EF984-B385-4E87-961A-8A409E2B0274}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Both.General", "Hive.Framework\Hive.Both.General\Hive.Both.General.csproj", "{D56EF984-B385-4E87-961A-8A409E2B0274}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Network.Abstractions", "Hive.Framework\Hive.Network.Abstractions\Hive.Network.Abstractions.csproj", "{72DFA00C-1C3D-4C21-B5E1-3F2C88EECD95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Network.Abstractions", "Hive.Framework\Hive.Network.Abstractions\Hive.Network.Abstractions.csproj", "{72DFA00C-1C3D-4C21-B5E1-3F2C88EECD95}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hive", "Hive", "{28660E92-0725-4702-8C1A-295F046E5FA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Codec.Abstractions", "Hive.Framework\Hive.Codec.Abstractions\Hive.Codec.Abstractions.csproj", "{C3F4B30B-4011-4800-BDED-1F29512476A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Codec.Abstractions", "Hive.Framework\Hive.Codec.Abstractions\Hive.Codec.Abstractions.csproj", "{C3F4B30B-4011-4800-BDED-1F29512476A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Network.Shared", "Hive.Framework\Hive.Network.Shared\Hive.Network.Shared.csproj", "{AB8F2D66-6A12-4A8C-BA23-5B9C3A99EAFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Network.Shared", "Hive.Framework\Hive.Network.Shared\Hive.Network.Shared.csproj", "{AB8F2D66-6A12-4A8C-BA23-5B9C3A99EAFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Common.Shared", "Hive.Framework\Hive.Common.Shared\Hive.Common.Shared.csproj", "{98BCD1E0-8DCD-4C0A-B3FE-46CDAD2032C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Common.Shared", "Hive.Framework\Hive.Common.Shared\Hive.Common.Shared.csproj", "{98BCD1E0-8DCD-4C0A-B3FE-46CDAD2032C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Codec.Shared", "Hive.Framework\Hive.Codec.Shared\Hive.Codec.Shared.csproj", "{9222C8EA-7613-4E19-AB2B-3C018C9B0E08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Codec.Shared", "Hive.Framework\Hive.Codec.Shared\Hive.Codec.Shared.csproj", "{9222C8EA-7613-4E19-AB2B-3C018C9B0E08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Codec.MemoryPack", "Hive.Framework\Hive.Codec.MemoryPack\Hive.Codec.MemoryPack.csproj", "{8BF2E3ED-DBC5-4E7A-B307-BF71D4E3513A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Codec.MemoryPack", "Hive.Framework\Hive.Codec.MemoryPack\Hive.Codec.MemoryPack.csproj", "{8BF2E3ED-DBC5-4E7A-B307-BF71D4E3513A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hive.Network.Tcp", "Hive.Framework\Hive.Network.Tcp\Hive.Network.Tcp.csproj", "{B4323153-973C-4A1C-AC60-A46CBD3FA15C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hive.Network.Tcp", "Hive.Framework\Hive.Network.Tcp\Hive.Network.Tcp.csproj", "{B4323153-973C-4A1C-AC60-A46CBD3FA15C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SDK", "MiniGameRouter.SDK\MiniGameRouter.SDK.csproj", "{22EBD05A-99C9-4545-850C-92C9EEC995F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGameRouter.SDK", "MiniGameRouter.SDK\MiniGameRouter.SDK.csproj", "{22EBD05A-99C9-4545-850C-92C9EEC995F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.SideCar", "MiniGameRouter.SideCar\MiniGameRouter.SideCar.csproj", "{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGameRouter.SideCar", "MiniGameRouter.SideCar\MiniGameRouter.SideCar.csproj", "{A01A0397-2F09-4392-A2EC-FA49D8B50FC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.Benchmark", "MiniGameRouter.Benchmark\MiniGameRouter.Benchmark.csproj", "{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGameRouter.Benchmark", "MiniGameRouter.Benchmark\MiniGameRouter.Benchmark.csproj", "{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniGameRouter.PressureTest", "MiniGameRouter.PressureTest\MiniGameRouter.PressureTest.csproj", "{7FCDDAF0-50A8-4862-8DCF-FB7EB5FCA293}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -86,6 +91,13 @@ Global
 		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E5B3E4D-9574-4FA1-9C64-D8B57E1802BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FCDDAF0-50A8-4862-8DCF-FB7EB5FCA293}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FCDDAF0-50A8-4862-8DCF-FB7EB5FCA293}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FCDDAF0-50A8-4862-8DCF-FB7EB5FCA293}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FCDDAF0-50A8-4862-8DCF-FB7EB5FCA293}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D56EF984-B385-4E87-961A-8A409E2B0274} = {28660E92-0725-4702-8C1A-295F046E5FA1}
@@ -96,5 +108,8 @@ Global
 		{9222C8EA-7613-4E19-AB2B-3C018C9B0E08} = {28660E92-0725-4702-8C1A-295F046E5FA1}
 		{8BF2E3ED-DBC5-4E7A-B307-BF71D4E3513A} = {28660E92-0725-4702-8C1A-295F046E5FA1}
 		{B4323153-973C-4A1C-AC60-A46CBD3FA15C} = {28660E92-0725-4702-8C1A-295F046E5FA1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A19D7A5E-794F-4891-9524-F599CD420B0D}
 	EndGlobalSection
 EndGlobal
