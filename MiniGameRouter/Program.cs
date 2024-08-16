@@ -59,6 +59,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<NodeHashRouteService>();
 builder.Services.AddSingleton<NodeWeightedRouteService>();
 builder.Services.AddSingleton<HealthCheckService>();
+builder.Services.AddSingleton<DynamicRoutingService>();
 
 builder.Services.AddHostedService(sP => sP.GetRequiredService<HealthCheckService>());
 builder.Services.AddHostedService<LegacyEndPointMappingCleanupService>();
