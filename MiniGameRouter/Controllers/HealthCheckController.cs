@@ -6,6 +6,7 @@ using MiniGameRouter.Models.DB;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Services;
 using MiniGameRouter.Shared.Models;
+using Prometheus;
 
 namespace MiniGameRouter.Controllers;
 
@@ -17,6 +18,10 @@ public sealed class HealthCheckController : Controller
     private readonly EndPointMappingContext _endPointMappingContext;
     private readonly HealthCheckService _healthCheckService;
     private readonly ILogger _logger;
+
+    private static readonly Histogram HealthCheckDuration = Metrics.CreateHistogram(
+        "minigame_router_health_check_duration",
+        "Duration of health check");
 
     public HealthCheckController(
         EndPointMappingContext endPointMappingContext,
@@ -43,23 +48,26 @@ public sealed class HealthCheckController : Controller
         if (model.Status is not ServiceStatus.Green and not ServiceStatus.Yellow and not ServiceStatus.Red)
             return BadRequest("Invalid status");
 
-        if (!_healthCheckService.TryGetStatus(model, out _))
+        using (HealthCheckDuration.NewTimer())
         {
-            var hasService = await _endPointMappingContext.EndPoints
-                .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
-                               e.TargetEndPoint == model.EndPoint);
+            if (!_healthCheckService.TryGetStatus(model, out _))
+            {
+                var hasService = await _endPointMappingContext.EndPoints
+                    .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
+                                   e.TargetEndPoint == model.EndPoint);
 
-            if (!hasService)
-                return BadRequest("Service not found");
+                if (!hasService)
+                    return BadRequest("Service not found");
+            }
+
+            var statusHistory = new HealthCheckStatus
+            {
+                CheckTime = DateTime.UtcNow,
+                Status = model.Status
+            };
+
+            await _healthCheckService.AddCheckAsync(model, statusHistory, _cache);
         }
-
-        var statusHistory = new HealthCheckStatus
-        {
-            CheckTime = DateTime.UtcNow,
-            Status = model.Status
-        };
-
-        await _healthCheckService.AddCheckAsync(model, statusHistory, _cache);
 
         _logger.LogInformation(
             "Service [{service}] reported its status as [{status}] at [{endPoint}].",
