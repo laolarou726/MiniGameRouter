@@ -11,6 +11,7 @@ using Serilog;
 const string redisInstanceName = "MiniGameRouter:";
 const string mongoDatabaseName = "MiniGameRouter";
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Setup logger

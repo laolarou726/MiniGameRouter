@@ -12,7 +12,8 @@ namespace MiniGameRouter.SDK.Managers;
 public class ServiceHealthManager : BackgroundService
 {
     private readonly ConcurrentDictionary<Guid, EndPointRecord> _endPoints = [];
-    private readonly Channel<EndPointRecord> _checkChannel = Channel.CreateUnbounded<EndPointRecord>();
+    private readonly object _locker = new();
+    private readonly PriorityQueue<EndPointRecord, DateTime> _checkQueue = new ();
     private readonly ILogger _logger;
 
     private readonly IServerConfigurationProvider _configurationProvider;
@@ -36,20 +37,26 @@ public class ServiceHealthManager : BackgroundService
 
         while (!ct.IsCancellationRequested)
         {
-            var canRead = await _checkChannel.Reader.WaitToReadAsync(ct);
+            EndPointRecord? endPoint;
+            bool succeeded;
 
-            if (!canRead) break;
+            lock (_locker)
+            {
+                succeeded = _checkQueue.TryDequeue(out endPoint, out _);
+            }
 
-            var endPoint = await _checkChannel.Reader.ReadAsync(ct);
+            if (!succeeded || endPoint == null)
+            {
+                await Task.Delay(1, ct);
+                continue;
+            }
 
             if (!_endPoints.ContainsKey(endPoint.Id))
             {
                 _logger.LogWarning(
-                    "EndPoint with id [{id}] not found. Remaining count {count}.",
-                    endPoint.Id,
-                    _checkChannel.Reader.Count);
+                    "EndPoint with id [{id}] not found.",
+                    endPoint.Id);
 
-                await Task.Delay(100, ct);
                 continue;
             }
 
@@ -58,11 +65,10 @@ public class ServiceHealthManager : BackgroundService
 
             var health = await healthCheckService.ReportHealthAsync(endPoint.ServiceName, endPoint.EndPoint, status);
 
-            var canWrite = await _checkChannel.Writer.WaitToWriteAsync(ct);
-
-            if (!canWrite) break;
-
-            await _checkChannel.Writer.WriteAsync(endPoint, ct);
+            lock (_locker)
+            {
+                _checkQueue.Enqueue(endPoint, DateTime.UtcNow);
+            }
 
             if (!health)
             {
@@ -75,29 +81,23 @@ public class ServiceHealthManager : BackgroundService
             }
 
             _logger.LogInformation(
-                "HealthCheck for [{service}] at [{endPoint}] is [{status}], remaining count [{count}].",
+                "HealthCheck for [{service}] at [{endPoint}] is [{status}].",
                 endPoint.ServiceName,
                 endPoint.EndPoint,
-                health ? "Success" : "Failed",
-                _checkChannel.Reader.Count);
+                health ? "Success" : "Failed");
 
             await Task.Delay(TimeSpan.FromSeconds(Random.Shared.NextDouble() * 10d / Math.Ceiling((double)_endPoints.Count / maxConcurrency)), ct);
         }
     }
 
-    public async Task AddOrUpdateEndPointAsync(EndPointRecord record, CancellationToken ct)
+    public void AddOrUpdateEndPoint(EndPointRecord record)
     {
         _endPoints.AddOrUpdate(record.Id, record, (_, _) => record);
 
-        var canWrite = await _checkChannel.Writer.WaitToWriteAsync(ct);
-
-        if (!canWrite)
+        lock (_locker)
         {
-            _logger.LogWarning("Failed to write to check channel.");
-            return;
+            _checkQueue.Enqueue(record, default);
         }
-
-        await _checkChannel.Writer.WriteAsync(record, ct);
     }
 
     public void RemoveEndPoint(Guid id)
@@ -121,8 +121,6 @@ public class ServiceHealthManager : BackgroundService
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
-        _checkChannel.Writer.Complete();
-
         _logger.LogInformation("ServiceHealthManager stopped.");
 
         return base.StopAsync(cancellationToken);

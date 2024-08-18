@@ -19,7 +19,15 @@ public sealed class HealthCheckService : BackgroundService
         "minigame_router_unhealthy_services_count",
         "Current unhealthy services count");
 
-    private readonly TimeSpan _checkTimeout = TimeSpan.FromSeconds(15);
+    private static readonly Gauge ServiceStatusCount = Metrics.CreateGauge(
+        "minigame_router_service_status_count",
+        "Current service status count",
+        new GaugeConfiguration
+        {
+            LabelNames = ["status"]
+        });
+
+    private readonly TimeSpan _checkTimeout = TimeSpan.FromSeconds(20);
     private readonly ConcurrentDictionary<string, HealthCheckEntry> _entries = new();
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger _logger;
@@ -92,15 +100,24 @@ public sealed class HealthCheckService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var healthyCount = 0;
-            var unhealthyCount = 0;
+            var greenCount = 0;
+            var yellowCount = 0;
+            var redCount = 0;
 
             foreach (var entry in _entries.Values)
             {
-                if (entry.AverageStatus == ServiceStatus.Green)
-                    healthyCount++;
-                else
-                    unhealthyCount++;
+                switch (entry.AverageStatus)
+                {
+                    case ServiceStatus.Green:
+                        greenCount++;
+                        break;
+                    case ServiceStatus.Yellow:
+                        yellowCount++;
+                        break;
+                    case ServiceStatus.Red:
+                        redCount++;
+                        break;
+                }
 
                 if (entry.LastCheckUtc.Add(_checkTimeout) >= DateTime.UtcNow) continue;
 
@@ -113,8 +130,12 @@ public sealed class HealthCheckService : BackgroundService
                 await entry.AddCheckAsync(status, cache);
             }
 
-            CurrentHealthyServicesCount.Set(healthyCount);
-            CurrentUnhealthyServicesCount.Set(unhealthyCount);
+            CurrentHealthyServicesCount.Set(greenCount + yellowCount);
+            CurrentUnhealthyServicesCount.Set(redCount);
+
+            ServiceStatusCount.WithLabels("green").Set(greenCount);
+            ServiceStatusCount.WithLabels("yellow").Set(yellowCount);
+            ServiceStatusCount.WithLabels("red").Set(redCount);
 
             await Task.Delay(_checkTimeout, stoppingToken);
         }

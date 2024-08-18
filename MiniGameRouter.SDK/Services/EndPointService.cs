@@ -127,7 +127,7 @@ public class EndPointService : IEndPointService
 
         if (addToExtraManager)
             _extraEndPointManager.AddEndPoint(createdRecord.Id);
-        await _healthManager.AddOrUpdateEndPointAsync(createdRecord, _hostApplicationLifetime.ApplicationStopping);
+        _healthManager.AddOrUpdateEndPoint(createdRecord);
 
         return createdRecord.Id;
     }
