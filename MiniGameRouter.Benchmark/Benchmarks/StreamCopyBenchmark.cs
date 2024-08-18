@@ -1,7 +1,7 @@
 using System.Buffers;
 using BenchmarkDotNet.Attributes;
+using CommunityToolkit.HighPerformance;
 using Microsoft.IO;
-using Microsoft.Toolkit.HighPerformance;
 
 namespace MiniGameRouter.Benchmark.Benchmarks;
 

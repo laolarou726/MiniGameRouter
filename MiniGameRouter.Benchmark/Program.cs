@@ -7,6 +7,7 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        BenchmarkRunner.Run<StreamCopyBenchmark>();
+        BenchmarkRunner.Run<JobQueueBenchmark>();
+        // BenchmarkRunner.Run<StreamCopyBenchmark>();
     }
 }
