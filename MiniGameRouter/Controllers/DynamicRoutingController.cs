@@ -2,6 +2,7 @@
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.Services;
 using MiniGameRouter.Shared.Models;
+using Prometheus;
 
 namespace MiniGameRouter.Controllers;
 
@@ -9,6 +10,22 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class DynamicRoutingController : Controller
 {
+    private static readonly Gauge RegisteredMatchCounter = Metrics.CreateGauge(
+        "minigame_router_dynamic_routing_match_total",
+        "Total number of dynamic routing matches");
+
+    private static readonly Counter MatchMissedCounter = Metrics.CreateCounter(
+        "minigame_router_dynamic_routing_match_missed_total",
+        "Total number of dynamic routing matching miss");
+
+    private static readonly Histogram DynamicRoutingCreateDuration = Metrics.CreateHistogram(
+        "minigame_router_dynamic_routing_create_duration",
+        "Duration of creating dynamic routing");
+
+    private static readonly Histogram DynamicRoutingDeleteDuration = Metrics.CreateHistogram(
+        "minigame_router_dynamic_routing_delete_duration",
+        "Duration of delete dynamic routing");
+
     private readonly DynamicRoutingMappingContext _dynamicRoutingMappingContext;
     private readonly DynamicRoutingService _dynamicRoutingService;
     private readonly ILogger _logger;
@@ -29,7 +46,11 @@ public sealed class DynamicRoutingController : Controller
     {
         var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings.FindAsync(id);
 
-        if (record == null) return NotFound();
+        if (record == null)
+        {
+            MatchMissedCounter.Inc();
+            return NotFound();
+        }
 
         return Ok(record);
     }
@@ -40,7 +61,11 @@ public sealed class DynamicRoutingController : Controller
     {
         var match = await _dynamicRoutingService.TryGetMatchAsync(rawStr);
 
-        if (match == null) return NotFound();
+        if (match == null)
+        {
+            MatchMissedCounter.Inc();
+            return NotFound();
+        }
 
         return Ok(match);
     }
@@ -49,21 +74,31 @@ public sealed class DynamicRoutingController : Controller
     public async Task<IActionResult> CreateRoutingAsync(
         [FromBody] DynamicRoutingMappingRequestModel model)
     {
-        var result = await _dynamicRoutingService.TryAddMappingToDbAsync(model);
+        using (DynamicRoutingCreateDuration.NewTimer())
+        {
+            var result = await _dynamicRoutingService.TryAddMappingToDbAsync(model);
 
-        if (!result) return BadRequest();
+            if (!result) return BadRequest();
 
-        return Ok();
+            RegisteredMatchCounter.Inc();
+
+            return Ok();
+        }
     }
 
     [HttpDelete("delete/{id:guid}")]
     public async Task<IActionResult> RemoveRoutingAsync(
         [FromRoute] Guid id)
     {
-        var result = await _dynamicRoutingService.TryRemoveMappingAsync(id);
+        using (DynamicRoutingDeleteDuration.NewTimer())
+        {
+            var result = await _dynamicRoutingService.TryRemoveMappingAsync(id);
 
-        if (!result) return NotFound();
+            if (!result) return NotFound();
 
-        return Ok();
+            RegisteredMatchCounter.Dec();
+
+            return Ok();
+        }
     }
 }

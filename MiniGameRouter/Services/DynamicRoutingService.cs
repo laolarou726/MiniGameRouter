@@ -29,7 +29,7 @@ public class DynamicRoutingService
 
     private static string GetCacheKey(string rawStr)
     {
-        return $"dr_{rawStr.ToLower()}";
+        return $"DYNAMIC_ROUTING_{rawStr.ToLower()}";
     }
 
     public async Task<string?> TryGetMatchAsync(string rawStr)
