@@ -14,21 +14,18 @@ public abstract class AbstractRandomOpServiceBase : BackgroundService
     protected readonly int ParallelCount;
     protected readonly ConcurrentQueue<(Guid, EndPointMappingRequestModel)> EndPoints = [];
     protected readonly IEndPointService EndPointService;
-    protected readonly RandomServiceProvider RandomServiceProvider;
     protected readonly ILogger Logger;
 
     protected AbstractRandomOpServiceBase(
         bool enableRandomOp,
         IConfiguration configuration,
         IEndPointService endPointService,
-        RandomServiceProvider randomServiceProvider,
         ILogger logger)
     {
         _enableRandomOp = enableRandomOp;
         ParallelCount = configuration.GetValue("PressureTest:RandomEndPointOps:ParallelCount", 10);
 
         EndPointService = endPointService;
-        RandomServiceProvider = randomServiceProvider;
         Logger = logger;
     }
 

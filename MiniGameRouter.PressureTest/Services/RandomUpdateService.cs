@@ -7,14 +7,12 @@ namespace MiniGameRouter.PressureTest.Services;
 
 public sealed class RandomUpdateService(
     IConfiguration configuration,
-    RandomServiceProvider randomServiceProvider,
     IEndPointService endPointService,
     ILogger<RandomUpdateService> logger)
     : AbstractRandomOpServiceBase(
         configuration.GetValue("PressureTest:RandomEndPointOps:EnableRandomUpdate", false),
         configuration,
         endPointService,
-        randomServiceProvider,
         logger)
 {
     protected override async Task PerformRandomTask(CancellationToken stoppingToken)

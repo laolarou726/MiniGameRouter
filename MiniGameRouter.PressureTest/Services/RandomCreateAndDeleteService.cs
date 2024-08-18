@@ -8,13 +8,11 @@ namespace MiniGameRouter.PressureTest.Services;
 public sealed class RandomCreateAndDeleteService(
     IConfiguration configuration,
     IEndPointService endPointService,
-    RandomServiceProvider randomServiceProvider,
     ILogger<RandomCreateAndDeleteService> logger)
     : AbstractRandomOpServiceBase(
         configuration.GetValue("PressureTest:RandomEndPointOps:EnableRandomCreateAndDelete", false),
         configuration,
         endPointService,
-        randomServiceProvider,
         logger)
 {
     private long _remainCount;
