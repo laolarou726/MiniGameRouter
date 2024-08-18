@@ -42,6 +42,7 @@ public sealed class EndPointController : Controller
         "Duration of deleting endpoints");
 
     private readonly IDistributedCache _cache;
+    private readonly IHostApplicationLifetime _applicationLifetime;
 
     private readonly EndPointMappingContext _endPointMappingContext;
     private readonly bool _enforceHealthy;
@@ -57,6 +58,7 @@ public sealed class EndPointController : Controller
         NodeWeightedRouteService weightedRouteService,
         NodeHashRouteService hashRouteService,
         IDistributedCache cache,
+        IHostApplicationLifetime applicationLifetime,
         ILogger<EndPointController> logger)
     {
         _enforceHealthy = configuration.GetValue<bool>("Routing:EnforceHealthy");
@@ -66,6 +68,7 @@ public sealed class EndPointController : Controller
         _weightedRouteService = weightedRouteService;
         _hashRouteService = hashRouteService;
         _cache = cache;
+        _applicationLifetime = applicationLifetime;
         _logger = logger;
     }
 
@@ -292,6 +295,16 @@ public sealed class EndPointController : Controller
                 IsValid = true
             };
 
+            var healthCheckServiceName = HealthCheckService.GetServiceName(record);
+
+            await _cache.SetStringAsync(
+                $"REG_{healthCheckServiceName}",
+                "1",
+                new DistributedCacheEntryOptions
+                {
+                    SlidingExpiration = TimeSpan.FromDays(1)
+                });
+
             await _endPointMappingContext.EndPoints.AddAsync(record);
             await _endPointMappingContext.SaveChangesAsync();
 
@@ -342,7 +355,9 @@ public sealed class EndPointController : Controller
 
             _hashRouteService.RemoveNode(record);
             _weightedRouteService.RemoveNode(record);
-            _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
+            await _healthCheckService.RemoveEntryAsync(
+                HealthCheckService.GetServiceName(record),
+                _applicationLifetime.ApplicationStopping);
 
             var cacheKey = HealthCheckService.GetServiceName(found);
             await _cache.RemoveAsync(cacheKey);
@@ -379,10 +394,14 @@ public sealed class EndPointController : Controller
 
             _hashRouteService.RemoveNode(record);
             _weightedRouteService.RemoveNode(record);
-            _healthCheckService.RemoveEntry(HealthCheckService.GetServiceName(record));
 
-            var cacheKey = HealthCheckService.GetServiceName(found);
-            await _cache.RemoveAsync(cacheKey);
+            var healthCheckServiceName = HealthCheckService.GetServiceName(record);
+
+            await _cache.RemoveAsync(healthCheckServiceName);
+            await _cache.RemoveAsync($"REG_{healthCheckServiceName}");
+            await _healthCheckService.RemoveEntryAsync(
+                healthCheckServiceName,
+                _applicationLifetime.ApplicationStopping);
 
             _endPointMappingContext.EndPoints.Remove(found);
             await _endPointMappingContext.SaveChangesAsync();

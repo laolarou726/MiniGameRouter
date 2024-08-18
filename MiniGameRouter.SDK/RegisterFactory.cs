@@ -27,9 +27,9 @@ public static class RegisterFactory
         services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
         services.AddSingleton<IServerConfigurationProvider, ServerConfigurationProvider>();
 
-        services.AddHostedService<ServiceRegistrationManager>();
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
         services.AddHostedService(sC => sC.GetRequiredService<ExtraEndPointManager>());
+        services.AddHostedService<ServiceRegistrationManager>();
 
         return services
             .AddApiClients(configuration)

@@ -5,12 +5,9 @@ namespace MiniGameRouter.Helper;
 
 public static class RedisHelper
 {
-    public static async Task SetAsync<T>(this IDistributedCache cache, string key, T value, TimeSpan? expiry = null)
+    public static async Task SetAsync<T>(this IDistributedCache cache, string key, T value, DistributedCacheEntryOptions? options = null)
     {
-        var options = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = expiry
-        };
+        options ??= new DistributedCacheEntryOptions();
 
         var json = JsonSerializer.Serialize(value);
         await cache.SetStringAsync(key, json, options);

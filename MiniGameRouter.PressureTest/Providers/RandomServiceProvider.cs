@@ -4,7 +4,7 @@ namespace MiniGameRouter.PressureTest.Providers;
 
 public class RandomServiceProvider
 {
-    public EndPointMappingRequestModel GetRandomEndPoint()
+    public static EndPointMappingRequestModel GetRandomEndPoint()
     {
         return new EndPointMappingRequestModel
         {

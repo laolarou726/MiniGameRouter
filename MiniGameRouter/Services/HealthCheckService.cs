@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Caching.Distributed;
-using MiniGameRouter.Helper;
 using MiniGameRouter.Models;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Shared.Models;
@@ -23,10 +22,14 @@ public sealed class HealthCheckService : BackgroundService
     private readonly TimeSpan _checkTimeout = TimeSpan.FromSeconds(15);
     private readonly ConcurrentDictionary<string, HealthCheckEntry> _entries = new();
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger _logger;
 
-    public HealthCheckService(IServiceScopeFactory scopeFactory)
+    public HealthCheckService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<HealthCheckService> logger)
     {
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     public static string GetServiceName(string serviceName, string endPoint)
@@ -71,9 +74,15 @@ public sealed class HealthCheckService : BackgroundService
         await entry.AddCheckAsync(status, cache);
     }
 
-    public bool RemoveEntry(string serviceName)
+    public async Task RemoveEntryAsync(string serviceName, CancellationToken ct)
     {
-        return _entries.TryRemove(serviceName, out _);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+
+        if (_entries.TryRemove(serviceName, out var entry))
+        {
+            await cache.RemoveAsync(entry.ServiceName, ct);
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -111,56 +120,25 @@ public sealed class HealthCheckService : BackgroundService
         }
     }
 
-    public class HealthCheckEntry(string serviceName, string endPoint)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        private const int MaxHistoryCount = 10;
+        _logger.LogInformation("HealthCheckService stopping, waiting for 5 sec to fully collect...");
 
-        private readonly byte[] _history = new byte[3];
+        await Task.Delay(5000, CancellationToken.None);
 
-        public string ServiceName { get; } = serviceName;
-        public string EndPoint { get; } = endPoint;
-        public ServiceStatus AverageStatus { get; private set; }
-        public DateTime LastCheckUtc { get; private set; }
-        public Queue<HealthCheckStatus> CheckHistories { get; } = new(MaxHistoryCount);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
-        private void ComputeAverageStatus()
+        foreach (var entry in _entries.Values)
         {
-            double total = _history[0] + _history[1] * 2 + _history[2] * 3;
-            var average = total / MaxHistoryCount;
+            await cache.RemoveAsync(entry.ServiceName, CancellationToken.None);
 
-            AverageStatus = average switch
-            {
-                < 1.5 => ServiceStatus.Red,
-                < 2.5 => ServiceStatus.Yellow,
-                _ => ServiceStatus.Green
-            };
+            _logger.LogInformation(
+                "Service [{service}] status [{status}] removed from cache.",
+                entry.ServiceName,
+                entry.AverageStatus);
         }
 
-        private void AddCheck(HealthCheckStatus status)
-        {
-            LastCheckUtc = DateTime.UtcNow;
-
-            CheckHistories.Enqueue(status);
-            if (CheckHistories.Count > MaxHistoryCount)
-            {
-                var oldest = CheckHistories.Dequeue();
-
-                _history[(int)oldest.Status - 1]--;
-                ComputeAverageStatus();
-            }
-
-            _history[(int)status.Status - 1]++;
-        }
-
-        public async Task AddCheckAsync(
-            HealthCheckStatus status,
-            IDistributedCache cache)
-        {
-            AddCheck(status);
-
-            if (CheckHistories.Count < MaxHistoryCount) return;
-
-            await cache.SetAsync(ServiceName, AverageStatus);
-        }
+        _logger.LogInformation("HealthCheckService stopped.");
     }
 }

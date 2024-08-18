@@ -52,12 +52,18 @@ public sealed class HealthCheckController : Controller
         {
             if (!_healthCheckService.TryGetStatus(model, out _))
             {
-                var hasService = await _endPointMappingContext.EndPoints
-                    .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
-                                   e.TargetEndPoint == model.EndPoint);
+                var healthCheckServiceName = HealthCheckService.GetServiceName(model);
+                var hasServiceCache = await _cache.GetStringAsync($"REG_{healthCheckServiceName}");
 
-                if (!hasService)
-                    return BadRequest("Service not found");
+                if (string.IsNullOrEmpty(hasServiceCache) || hasServiceCache != "1")
+                {
+                    var hasService = await _endPointMappingContext.EndPoints
+                        .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
+                                       e.TargetEndPoint == model.EndPoint);
+
+                    if (!hasService)
+                        return NotFound("Service not found");
+                }
             }
 
             var statusHistory = new HealthCheckStatus

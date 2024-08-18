@@ -38,9 +38,9 @@ internal class Program
         builder.Services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
         builder.Services.AddSingleton<IServerConfigurationProvider, RandomServerConfigurationProvider>();
 
-        builder.Services.AddHostedService<ServiceRegistrationManager>();
         builder.Services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
         builder.Services.AddHostedService(sC => sC.GetRequiredService<ExtraEndPointManager>());
+        builder.Services.AddHostedService<ServiceRegistrationManager>();
 
         builder.Services.AddSingleton<RandomServiceProvider>();
         builder.Services.AddHostedService<RandomCreateAndDeleteService>();

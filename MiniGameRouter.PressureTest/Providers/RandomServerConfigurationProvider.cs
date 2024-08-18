@@ -28,6 +28,7 @@ public class RandomServerConfigurationProvider : IServerConfigurationProvider
         Options = new MiniGameRouterOptions
         {
             EndPointMappings = GenerateEndPoints(),
+            HealthCheckConcurrency = 10,
             ConnectionString = configuration.GetValue<string>("PressureTest:ConnectionString") ?? throw new NullReferenceException()
         };
 
