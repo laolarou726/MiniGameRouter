@@ -23,12 +23,14 @@ public static class RegisterFactory
     {
         services.AddSingleton<ServiceHealthManager>();
         services.AddSingleton<ExtraEndPointManager>();
+        services.AddSingleton<DynamicMappingManager>();
         
         services.AddSingleton<ISessionHashIdentityProvider, SessionHashIdentityProvider>();
         services.AddSingleton<IServerConfigurationProvider, ServerConfigurationProvider>();
 
         services.AddHostedService(sC => sC.GetRequiredService<ServiceHealthManager>());
         services.AddHostedService(sC => sC.GetRequiredService<ExtraEndPointManager>());
+        services.AddHostedService(sC => sC.GetRequiredService<DynamicMappingManager>());
         services.AddHostedService<ServiceRegistrationManager>();
 
         return services
@@ -61,6 +63,13 @@ public static class RegisterFactory
 
         services
             .AddHttpClient<IVersionService, VersionService>(client =>
+            {
+                client.BaseAddress = new Uri(options.ConnectionString);
+            })
+            .AddPolicyHandler(HttpPolicyHelper.GetRetryPolicy());
+
+        services
+            .AddHttpClient<IDynamicRoutingSerivce, DynamicRoutingService>(client =>
             {
                 client.BaseAddress = new Uri(options.ConnectionString);
             })

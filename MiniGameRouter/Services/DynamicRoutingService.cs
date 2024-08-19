@@ -62,10 +62,10 @@ public class DynamicRoutingService
         return match.TargetEndPoint;
     }
 
-    public async Task<bool> TryAddMappingToDbAsync(DynamicRoutingMappingRequestModel model)
+    public async Task<Guid?> TryAddMappingToDbAsync(DynamicRoutingMappingRequestModel model)
     {
         if (string.IsNullOrEmpty(model.MatchPrefix) ||
-            string.IsNullOrEmpty(model.TargetEndPoint)) return false;
+            string.IsNullOrEmpty(model.TargetEndPoint)) return null;
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
@@ -77,7 +77,7 @@ public class DynamicRoutingService
         {
             _logger.LogWarning("A mapping with same prefix [{prefix}] has already been added.", model.MatchPrefix);
 
-            return false;
+            return null;
         }
 
         foreach (var (k, cacheKeys) in _cacheMappings)
@@ -102,7 +102,7 @@ public class DynamicRoutingService
         await context.DynamicRoutingMappings.AddAsync(mapping);
         await context.SaveChangesAsync();
 
-        return true;
+        return mapping.Id;
     }
 
     public async Task<bool> TryRemoveMappingAsync(Guid id)

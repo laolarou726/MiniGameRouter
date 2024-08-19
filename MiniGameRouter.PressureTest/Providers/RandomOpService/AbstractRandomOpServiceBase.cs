@@ -1,35 +1,26 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.Shared.Models;
 using System.Collections.Concurrent;
 using MiniGameRouter.SDK.Interfaces;
 
-namespace MiniGameRouter.PressureTest.Providers;
+namespace MiniGameRouter.PressureTest.Providers.RandomOpService;
 
-public abstract class AbstractRandomOpServiceBase : BackgroundService
+public abstract class AbstractRandomOpServiceBase(
+    bool enableRandomOp,
+    IConfiguration configuration,
+    IEndPointService endPointService,
+    ILogger logger)
+    : AbstractOpServiceBase(
+        enableRandomOp,
+        configuration.GetValue("PressureTest:RandomEndPointOps:ParallelCount", 10),
+        configuration,
+        logger)
 {
-    private readonly bool _enableRandomOp;
-
-    protected readonly int ParallelCount;
     protected readonly ConcurrentQueue<(Guid, EndPointMappingRequestModel)> EndPoints = [];
-    protected readonly IEndPointService EndPointService;
-    protected readonly ILogger Logger;
+    protected readonly IEndPointService EndPointService = endPointService;
 
-    protected AbstractRandomOpServiceBase(
-        bool enableRandomOp,
-        IConfiguration configuration,
-        IEndPointService endPointService,
-        ILogger logger)
-    {
-        _enableRandomOp = enableRandomOp;
-        ParallelCount = configuration.GetValue("PressureTest:RandomEndPointOps:ParallelCount", 10);
-
-        EndPointService = endPointService;
-        Logger = logger;
-    }
-
-    protected virtual async Task PrepareAsync(CancellationToken stoppingToken)
+    protected override async Task PrepareAsync(CancellationToken stoppingToken)
     {
         for (var i = 0; i < ParallelCount; i++)
         {
@@ -56,11 +47,9 @@ public abstract class AbstractRandomOpServiceBase : BackgroundService
         }
     }
 
-    protected abstract Task PerformRandomTask(CancellationToken stoppingToken);
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!_enableRandomOp)
+        if (!EnableRandomOp)
         {
             Logger.LogInformation("RandomUpdateService is disabled.");
             return;

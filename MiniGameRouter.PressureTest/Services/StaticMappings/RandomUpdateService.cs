@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MiniGameRouter.PressureTest.Providers;
+using MiniGameRouter.PressureTest.Providers.RandomOpService;
 using MiniGameRouter.SDK.Interfaces;
 
-namespace MiniGameRouter.PressureTest.Services;
+namespace MiniGameRouter.PressureTest.Services.StaticMappings;
 
 public sealed class RandomUpdateService(
     IConfiguration configuration,

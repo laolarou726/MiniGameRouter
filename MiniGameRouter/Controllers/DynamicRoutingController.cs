@@ -18,6 +18,14 @@ public sealed class DynamicRoutingController : Controller
         "minigame_router_dynamic_routing_match_missed_total",
         "Total number of dynamic routing matching miss");
 
+    private static readonly Histogram DynamicRoutingGetDuration = Metrics.CreateHistogram(
+        "minigame_router_dynamic_routing_get_duration",
+        "Duration of getting dynamic routing",
+        new HistogramConfiguration
+        {
+            LabelNames = ["method"]
+        });
+
     private static readonly Histogram DynamicRoutingCreateDuration = Metrics.CreateHistogram(
         "minigame_router_dynamic_routing_create_duration",
         "Duration of creating dynamic routing");
@@ -44,30 +52,41 @@ public sealed class DynamicRoutingController : Controller
     public async Task<IActionResult> GetRoutingAsync(
         [FromRoute] Guid id)
     {
-        var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings.FindAsync(id);
-
-        if (record == null)
+        using (DynamicRoutingGetDuration.WithLabels("by_id").NewTimer())
         {
-            MatchMissedCounter.Inc();
-            return NotFound();
-        }
+            var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings.FindAsync(id);
 
-        return Ok(record);
+            if (record == null)
+            {
+                MatchMissedCounter.Inc();
+                return NotFound();
+            }
+
+            var result = new DynamicRoutingRecord(
+                record.Id,
+                record.MatchPrefix,
+                record.TargetEndPoint);
+
+            return Ok(result);
+        }
     }
 
     [HttpGet("{rawStr}")]
     public async Task<IActionResult> GetRoutingAsync(
         [FromRoute] string rawStr)
     {
-        var match = await _dynamicRoutingService.TryGetMatchAsync(rawStr);
-
-        if (match == null)
+        using (DynamicRoutingGetDuration.WithLabels("by_raw_string").NewTimer())
         {
-            MatchMissedCounter.Inc();
-            return NotFound();
-        }
+            var match = await _dynamicRoutingService.TryGetMatchAsync(rawStr);
 
-        return Ok(match);
+            if (match == null)
+            {
+                MatchMissedCounter.Inc();
+                return NotFound();
+            }
+
+            return Ok(match);
+        }
     }
 
     [HttpPost("create")]
@@ -76,13 +95,13 @@ public sealed class DynamicRoutingController : Controller
     {
         using (DynamicRoutingCreateDuration.NewTimer())
         {
-            var result = await _dynamicRoutingService.TryAddMappingToDbAsync(model);
+            var id = await _dynamicRoutingService.TryAddMappingToDbAsync(model);
 
-            if (!result) return BadRequest();
+            if (!id.HasValue) return BadRequest();
 
             RegisteredMatchCounter.Inc();
 
-            return Ok();
+            return Ok(id.Value);
         }
     }
 
