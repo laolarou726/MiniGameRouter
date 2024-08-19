@@ -73,7 +73,10 @@ Log.Information("[GC] IsServer={0} LatencyMode={1} LargeObjectHeapCompactionMode
 
 var app = builder.Build();
 
+#if DEBUG
 app.UseSerilogRequestLogging();
+#endif
+
 app.UseCors(corsBuilder => corsBuilder
     .AllowAnyOrigin()
     .AllowAnyMethod()
