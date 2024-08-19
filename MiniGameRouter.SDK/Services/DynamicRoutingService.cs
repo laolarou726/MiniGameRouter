@@ -54,7 +54,7 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
-            _logger.LogWarning("Maping {ServiceName} not found.", rawString);
+            _logger.LogWarning("Mapping {ServiceName} not found.", rawString);
             return null;
         }
 
@@ -103,7 +103,10 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
 
         _dynamicMappingManager.AddEndPoint(createdRecord);
 
-        _logger.LogInformation("Mapping [{prefix} -> {endPoint}] created.", reqModel.MatchPrefix, reqModel.TargetEndPoint);
+        _logger.LogInformation("Mapping [{prefix} -> {endPoint}] with id [{createdRecord}] created.",
+            reqModel.MatchPrefix,
+            reqModel.TargetEndPoint,
+            createdRecord);
 
         return createdRecord;
     }

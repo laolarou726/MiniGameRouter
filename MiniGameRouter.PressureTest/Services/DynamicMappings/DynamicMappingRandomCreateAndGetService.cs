@@ -46,7 +46,7 @@ public sealed class DynamicMappingRandomCreateAndGetService(
                 continue;
             }
 
-            Logger.LogInformation("Get endpoint [{endPoint}] using getting mode [{mode}].", prefix.Item1, caseNum);
+            Logger.LogInformation("Get matching [{matchId}] using getting mode [{mode}].", prefix.Item1, caseNum);
         }
     }
 }
