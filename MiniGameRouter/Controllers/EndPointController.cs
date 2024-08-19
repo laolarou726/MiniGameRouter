@@ -165,7 +165,10 @@ public sealed class EndPointController : Controller
                 found.TimeoutInMilliseconds,
                 found.IsValid);
 
-            await _cache.SetAsync(idStr, record);
+            await _cache.SetAsync(idStr, record, new DistributedCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(30)
+            });
 
             _logger.LogInformation(
                 "Client [{Address}] got mapping using ID [{Id}]",
@@ -396,9 +399,12 @@ public sealed class EndPointController : Controller
             _weightedRouteService.RemoveNode(record);
 
             var healthCheckServiceName = HealthCheckService.GetServiceName(record);
+            var idStr = id.ToString("N");
 
+            await _cache.RemoveAsync(idStr);
             await _cache.RemoveAsync(healthCheckServiceName);
             await _cache.RemoveAsync($"REG_{healthCheckServiceName}");
+
             await _healthCheckService.RemoveEntryAsync(
                 healthCheckServiceName,
                 _applicationLifetime.ApplicationStopping);

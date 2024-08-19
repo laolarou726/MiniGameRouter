@@ -7,7 +7,7 @@ namespace MiniGameRouter.PressureTest.Services.DynamicMappings;
 
 public sealed class DynamicMappingRandomCreateAndGetService(
     IConfiguration configuration,
-    IDynamicRoutingSerivce dynamicRoutingService,
+    IDynamicRoutingService dynamicRoutingService,
     ILogger<DynamicMappingRandomCreateAndGetService> logger)
     : AbstractRandomDynamicRoutingOpServiceBase(
         configuration.GetValue("PressureTest:RandomDynamicMappingOps:EnableRandomCreateAndGet", false),
@@ -21,7 +21,7 @@ public sealed class DynamicMappingRandomCreateAndGetService(
         {
             await Task.Delay(Random.Shared.Next(250, 1000), stoppingToken);
 
-            if (Prefixes.TryDequeue(out var prefix)) continue;
+            if (!Prefixes.TryDequeue(out var prefix)) continue;
 
             var caseNum = Random.Shared.Next(0, 2);
             string? record;
@@ -43,6 +43,12 @@ public sealed class DynamicMappingRandomCreateAndGetService(
             if (record == null)
             {
                 Logger.LogError("Failed to get mapping with id [{endPoint}] using getting mode [{mode}].", prefix.Item1, caseNum);
+                continue;
+            }
+
+            if (!record.Equals(prefix.Item3))
+            {
+                Logger.LogCritical("Mismatched mapping with id [{endPoint}] using getting mode [{mode}].", prefix.Item1, caseNum);
                 continue;
             }
 

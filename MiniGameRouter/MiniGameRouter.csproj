@@ -16,7 +16,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="KTrie" Version="2.5.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.8" />
 		<PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.1.0" />
@@ -37,6 +36,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\MiniGameRouter.Shared\MiniGameRouter.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\Trie\TrieNodes\" />
 	</ItemGroup>
 
 </Project>

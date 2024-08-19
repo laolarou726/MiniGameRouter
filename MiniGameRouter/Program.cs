@@ -11,7 +11,6 @@ using Serilog;
 const string redisInstanceName = "MiniGameRouter:";
 const string mongoDatabaseName = "MiniGameRouter";
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Setup logger
@@ -61,9 +60,12 @@ builder.Services.AddSingleton<NodeHashRouteService>();
 builder.Services.AddSingleton<NodeWeightedRouteService>();
 builder.Services.AddSingleton<HealthCheckService>();
 builder.Services.AddSingleton<DynamicRoutingService>();
+builder.Services.AddSingleton<DynamicRoutingPrefixMatchService>();
 
+builder.Services.AddHostedService(sP => sP.GetRequiredService<DynamicRoutingPrefixMatchService>());
 builder.Services.AddHostedService(sP => sP.GetRequiredService<HealthCheckService>());
 builder.Services.AddHostedService<LegacyEndPointMappingCleanupService>();
+
 
 Log.Information("Starting MiniGameRouter...");
 Log.Information("[GC] IsServer={0} LatencyMode={1} LargeObjectHeapCompactionMode={2}",

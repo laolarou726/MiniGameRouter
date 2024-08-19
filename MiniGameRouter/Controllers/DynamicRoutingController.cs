@@ -58,6 +58,8 @@ public sealed class DynamicRoutingController : Controller
 
             if (record == null)
             {
+                _logger.LogWarning("Mapping with id [{id}] not found.", id);
+
                 MatchMissedCounter.Inc();
                 return NotFound();
             }
@@ -72,15 +74,17 @@ public sealed class DynamicRoutingController : Controller
     }
 
     [HttpGet("match/{rawStr}")]
-    public async Task<IActionResult> GetRoutingAsync(
+    public IActionResult GetRoutingAsync(
         [FromRoute] string rawStr)
     {
         using (DynamicRoutingGetDuration.WithLabels("by_raw_string").NewTimer())
         {
-            var match = await _dynamicRoutingService.TryGetMatchAsync(rawStr);
+            var match = _dynamicRoutingService.TryGetMatch(rawStr);
 
             if (match == null)
             {
+                _logger.LogWarning("Not mapping found using prefix [{rawStr}]", rawStr);
+
                 MatchMissedCounter.Inc();
                 return NotFound();
             }

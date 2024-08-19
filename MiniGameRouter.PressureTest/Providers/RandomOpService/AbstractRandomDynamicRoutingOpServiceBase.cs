@@ -8,7 +8,7 @@ namespace MiniGameRouter.PressureTest.Providers.RandomOpService;
 public abstract class AbstractRandomDynamicRoutingOpServiceBase(
     bool enableRandomOp,
     IConfiguration configuration,
-    IDynamicRoutingSerivce dynamicRoutingService,
+    IDynamicRoutingService dynamicRoutingService,
     ILogger logger)
     : AbstractOpServiceBase(
         enableRandomOp,
@@ -16,12 +16,12 @@ public abstract class AbstractRandomDynamicRoutingOpServiceBase(
         configuration,
         logger)
 {
-    protected readonly IDynamicRoutingSerivce DynamicRoutingService = dynamicRoutingService;
-    protected readonly ConcurrentQueue<(Guid, string)> Prefixes = [];
+    protected readonly IDynamicRoutingService DynamicRoutingService = dynamicRoutingService;
+    protected readonly ConcurrentQueue<(Guid, string, string)> Prefixes = [];
 
     protected override async Task PrepareAsync(CancellationToken stoppingToken)
     {
-        var mappingCount = configuration.GetValue("PressureTest:RandomDynamicMappingOps:MappingCount", 200);
+        var mappingCount = Configuration.GetValue("PressureTest:RandomDynamicMappingOps:MappingCount", 200);
 
         for (var i = 0; i < mappingCount; i++)
         {
@@ -41,7 +41,7 @@ public abstract class AbstractRandomDynamicRoutingOpServiceBase(
                 throw new InvalidOperationException();
             }
 
-            Prefixes.Enqueue((id.Value, prefix));
+            Prefixes.Enqueue((id.Value, prefix, endPoint));
         }
     }
 }

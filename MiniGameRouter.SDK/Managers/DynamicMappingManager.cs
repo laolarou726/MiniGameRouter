@@ -15,7 +15,7 @@ public class DynamicMappingManager : IHostedService
 
     public DynamicMappingManager(
         IServiceScopeFactory serviceScopeFactory,
-        ILogger<ExtraEndPointManager> logger)
+        ILogger<DynamicMappingManager> logger)
     {
         _serviceScopeFactory = serviceScopeFactory;
         _logger = logger;
@@ -40,11 +40,11 @@ public class DynamicMappingManager : IHostedService
         await Task.Delay(5000, CancellationToken.None);
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        var endPointService = scope.ServiceProvider.GetRequiredService<IDynamicRoutingSerivce>();
+        var dynamicRoutingService = scope.ServiceProvider.GetRequiredService<IDynamicRoutingService>();
 
         foreach (var id in _mappings.Keys)
         {
-            var succeeded = await endPointService.DeleteMappingAsync(id);
+            var succeeded = await dynamicRoutingService.DeleteMappingAsync(id);
 
             if (!succeeded)
             {

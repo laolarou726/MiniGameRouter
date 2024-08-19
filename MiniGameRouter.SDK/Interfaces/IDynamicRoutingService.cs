@@ -2,7 +2,7 @@
 
 namespace MiniGameRouter.SDK.Interfaces;
 
-public interface IDynamicRoutingSerivce
+public interface IDynamicRoutingService
 {
     Task<DynamicRoutingRecord?> GetMappingAsync(Guid id);
 

@@ -8,7 +8,7 @@ using MiniGameRouter.SDK.Managers;
 
 namespace MiniGameRouter.SDK.Services;
 
-public class DynamicRoutingService : IDynamicRoutingSerivce
+public class DynamicRoutingService : IDynamicRoutingService
 {
     private readonly DynamicMappingManager _dynamicMappingManager;
     private readonly HttpClient _httpClient;
@@ -36,7 +36,7 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
-            _logger.LogWarning("Maping with id [{id}] not found.", id);
+            _logger.LogWarning("Mapping with id [{id}] not found.", id);
             return null;
         }
 
@@ -116,7 +116,7 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
         var url = $"/DynamicRouting/delete/{id:N}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, url);
-        using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
+        using var res = await _httpClient.SendAsync(req);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {

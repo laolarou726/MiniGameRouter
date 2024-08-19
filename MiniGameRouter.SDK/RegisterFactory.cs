@@ -69,7 +69,7 @@ public static class RegisterFactory
             .AddPolicyHandler(HttpPolicyHelper.GetRetryPolicy());
 
         services
-            .AddHttpClient<IDynamicRoutingSerivce, DynamicRoutingService>(client =>
+            .AddHttpClient<IDynamicRoutingService, DynamicRoutingService>(client =>
             {
                 client.BaseAddress = new Uri(options.ConnectionString);
             })
