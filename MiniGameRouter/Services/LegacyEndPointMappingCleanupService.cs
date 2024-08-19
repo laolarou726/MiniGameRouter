@@ -57,9 +57,8 @@ public class LegacyEndPointMappingCleanupService : BackgroundService
                     entry.ServiceName);
 
                 context.EndPoints.Remove(mapping);
+                await context.SaveChangesAsync(stoppingToken);
             }
-
-            await context.SaveChangesAsync(stoppingToken);
 
             _logger.LogInformation("Legacy end point mappings cleaned up");
 
