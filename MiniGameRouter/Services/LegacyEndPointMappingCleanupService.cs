@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MiniGameRouter.Controllers;
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Shared.Models;
@@ -55,6 +56,8 @@ public class LegacyEndPointMappingCleanupService : BackgroundService
                     "Removing legacy end point mapping [{endPoint}] of service [{serviceName}]",
                     entry.EndPoint,
                     entry.ServiceName);
+
+                EndPointController.EndPointCounter.Dec();
 
                 context.EndPoints.Remove(mapping);
                 await context.SaveChangesAsync(stoppingToken);

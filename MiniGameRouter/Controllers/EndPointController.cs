@@ -17,7 +17,7 @@ namespace MiniGameRouter.Controllers;
 [Route("[controller]")]
 public sealed class EndPointController : Controller
 {
-    private static readonly Gauge EndPointCounter = Metrics.CreateGauge(
+    public static readonly Gauge EndPointCounter = Metrics.CreateGauge(
         "minigame_router_endpoints_total",
         "Total number of endpoints");
 

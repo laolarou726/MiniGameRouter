@@ -120,11 +120,20 @@ public sealed class HealthCheckService : BackgroundService
                 }
 
                 if (entry.LastCheckUtc.Add(_checkTimeout) >= DateTime.UtcNow) continue;
+                if (DateTime.UtcNow - entry.LastCheckUtc >= TimeSpan.FromMinutes(10))
+                {
+                    _logger.LogWarning(
+                        "Service {ServiceName} is not responding for a long time, removing it from health check",
+                        entry.ServiceName);
+
+                    await RemoveEntryAsync(entry.ServiceName, stoppingToken);
+                    continue;
+                }
 
                 var status = new HealthCheckStatus
                 {
                     Status = ServiceStatus.Red,
-                    CheckTime = DateTime.UtcNow
+                    CheckTime = entry.LastCheckUtc
                 };
 
                 await entry.AddCheckAsync(status, cache);
