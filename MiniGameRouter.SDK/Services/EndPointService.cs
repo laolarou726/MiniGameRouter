@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Hosting;
@@ -42,32 +41,33 @@ public class EndPointService : IEndPointService
         RoutingMode? routingMode = null,
         string? hashKey = null)
     {
-        const string url = "/EndPoint/get/";
-
         if (routingMode == RoutingMode.Hashed && string.IsNullOrEmpty(hashKey))
             throw new Exception("Hash key is required for Hashed routing mode.");
 
-        var uriBuilder = new UriBuilder($"{url}{Uri.EscapeDataString(serviceName)}");
-        var query = new NameValueCollection();
+        routingMode ??= RoutingMode.Random;
 
-        if (routingMode != null)
-            query["mode"] = routingMode switch
-            {
-                RoutingMode.Random => "random",
-                RoutingMode.Weighted => "weighted",
-                RoutingMode.Hashed => $"hash;{Uri.EscapeDataString(hashKey!)}",
-                _ => throw new ArgumentOutOfRangeException(nameof(routingMode), routingMode, null)
-            };
+        var mode = routingMode switch
+        {
+            RoutingMode.Random => "random",
+            RoutingMode.Weighted => "weighted",
+            RoutingMode.Hashed => $"hash;{Uri.EscapeDataString(hashKey!)}",
+            _ => throw new ArgumentOutOfRangeException(nameof(routingMode), routingMode, null)
+        };
 
-        uriBuilder.Query = query.ToString();
+        var reqUri = $"/EndPoint/get/{Uri.EscapeDataString(serviceName)}?mode={mode}";
 
-        var reqUri = uriBuilder.Uri;
         using var req = new HttpRequestMessage(HttpMethod.Get, reqUri);
         using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
             _logger.LogWarning("Service {ServiceName} not found.", serviceName);
+            return null;
+        }
+
+        if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.BadRequest })
+        {
+            _logger.LogWarning("Service {ServiceName} is currently under unhealthy status.", serviceName);
             return null;
         }
 

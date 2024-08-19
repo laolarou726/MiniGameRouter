@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MiniGameRouter.SDK;
 using MiniGameRouter.PressureTest.Providers;
 using MiniGameRouter.PressureTest.Services.StaticMappings;
+using MiniGameRouter.PressureTest.Services.DynamicMappings;
 
 namespace MiniGameRouter.PressureTest;
 
@@ -48,6 +49,7 @@ internal class Program
         builder.Services.AddHostedService<RandomCreateAndDeleteService>();
         builder.Services.AddHostedService<RandomUpdateService>();
         builder.Services.AddHostedService<RandomGetService>();
+        builder.Services.AddHostedService<DynamicMappingRandomCreateAndGetService>();
 
         builder.Services
             .AddApiClients(builder.Configuration)

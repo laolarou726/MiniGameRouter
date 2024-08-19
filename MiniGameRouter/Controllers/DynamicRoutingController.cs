@@ -48,7 +48,7 @@ public sealed class DynamicRoutingController : Controller
         _logger = logger;
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("get/{id:guid}")]
     public async Task<IActionResult> GetRoutingAsync(
         [FromRoute] Guid id)
     {
@@ -71,7 +71,7 @@ public sealed class DynamicRoutingController : Controller
         }
     }
 
-    [HttpGet("{rawStr}")]
+    [HttpGet("match/{rawStr}")]
     public async Task<IActionResult> GetRoutingAsync(
         [FromRoute] string rawStr)
     {

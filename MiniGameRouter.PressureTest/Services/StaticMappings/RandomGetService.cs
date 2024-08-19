@@ -11,7 +11,7 @@ namespace MiniGameRouter.PressureTest.Services.StaticMappings;
 public class RandomGetService(
     IConfiguration configuration,
     IEndPointService endPointService,
-    ILogger<RandomUpdateService> logger)
+    ILogger<RandomGetService> logger)
     : AbstractRandomOpServiceBase(
         configuration.GetValue("PressureTest:RandomEndPointOps:EnableRandomGet", false),
         configuration,
@@ -32,9 +32,10 @@ public class RandomGetService(
 
             for (var subInstance = 0; subInstance < subInstanceCount; subInstance++)
             {
+                var serviceName = $"Random_Service_For_Get_Test_{i}";
                 var endPoint = RandomServiceProvider.GetRandomEndPoint($"SUB_INSTANCE_{subInstance}");
                 var id = await EndPointService.CreateEndPointAsync(
-                    $"Random_Service_For_Get_Test_{i}",
+                    serviceName,
                     endPoint.TargetEndPoint!,
                     (uint)Random.Shared.Next(1, 10),
                     endPoint.TimeoutInMilliseconds);
@@ -44,6 +45,8 @@ public class RandomGetService(
                     Logger.LogError("Failed to create endpoint: {endPoint}", endPoint);
                     throw new InvalidOperationException();
                 }
+
+                endPoint.ServiceName = serviceName;
 
                 EndPoints.Enqueue((id.Value, endPoint));
             }

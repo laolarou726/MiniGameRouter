@@ -29,7 +29,7 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
 
     public async Task<DynamicRoutingRecord?> GetMappingAsync(Guid id)
     {
-        var url = $"/DynamicRouting/{id:N}";
+        var url = $"/DynamicRouting/get/{id:N}";
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
@@ -47,7 +47,7 @@ public class DynamicRoutingService : IDynamicRoutingSerivce
 
     public async Task<string?> GetMappingAsync(string rawString)
     {
-        var url = $"/DynamicRouting/{Uri.EscapeDataString(rawString)}";
+        var url = $"/DynamicRouting/match/{Uri.EscapeDataString(rawString)}";
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);

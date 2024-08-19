@@ -6,11 +6,14 @@ using MiniGameRouter.SDK.Interfaces;
 namespace MiniGameRouter.PressureTest.Services.DynamicMappings;
 
 public sealed class DynamicMappingRandomCreateAndGetService(
-    bool enableRandomOp,
     IConfiguration configuration,
     IDynamicRoutingSerivce dynamicRoutingService,
-    ILogger logger)
-    : AbstractRandomDynamicRoutingOpServiceBase(enableRandomOp, configuration, dynamicRoutingService, logger)
+    ILogger<DynamicMappingRandomCreateAndGetService> logger)
+    : AbstractRandomDynamicRoutingOpServiceBase(
+        configuration.GetValue("PressureTest:RandomDynamicMappingOps:EnableRandomCreateAndGet", false),
+        configuration,
+        dynamicRoutingService,
+        logger)
 {
     protected override async Task PerformRandomTask(CancellationToken stoppingToken)
     {
