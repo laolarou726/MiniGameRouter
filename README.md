@@ -22,7 +22,7 @@ Currently, all major projects fully support standlone & docker/K8s env deploymen
     ```bash
     dotnet publish -c Release
     ```
-4. Go to /[Project_Dir]/bin/Release/net8.0, you should see the build output and the executable of the project.
+4. Go to `/[Project_Dir]/bin/Release/net8.0`, you should see the build output and the executable of the project.
 
 ### Deploy in Docker (Recommended)
 
