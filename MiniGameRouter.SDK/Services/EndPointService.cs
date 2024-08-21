@@ -126,10 +126,10 @@ public class EndPointService : IEndPointService
         }
 
         if (addToExtraManager)
-            _extraEndPointManager.AddEndPoint(createdRecord.Id);
+            _extraEndPointManager.AddEndPoint(createdRecord.RecordId);
         _healthManager.AddOrUpdateEndPoint(createdRecord);
 
-        return createdRecord.Id;
+        return createdRecord.RecordId;
     }
 
     public async Task<bool> EditEndPointAsync(

@@ -3,7 +3,7 @@ using MiniGameRouter.Shared.Interfaces;
 namespace MiniGameRouter.Shared.Models;
 
 public record EndPointRecord(
-    long Id,
+    long RecordId,
     string ServiceName,
     string EndPoint,
     uint Weight,
