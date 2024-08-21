@@ -154,7 +154,7 @@ public sealed class EndPointController : Controller
     {
         using (EndPointGetDuration.WithLabels("id").NewTimer())
         {
-            var idStr = id.ToString("N");
+            var idStr = id.ToString();
             var cached = await _cache.GetAsync<EndPointRecord>(idStr);
 
             if (cached is not null)
@@ -416,7 +416,7 @@ public sealed class EndPointController : Controller
             _weightedRouteService.RemoveNode(record);
 
             var healthCheckServiceName = HealthCheckService.GetServiceName(record);
-            var idStr = id.ToString("N");
+            var idStr = id.ToString();
 
             await _cache.RemoveAsync(idStr);
             await _cache.RemoveAsync(healthCheckServiceName);

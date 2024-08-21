@@ -7,6 +7,7 @@ public class ConsistentHash<T> : IDisposable
 {
     private int[] _ayKeys = null!; //缓存节点hash
     private int _replicate = 100; //虚拟节点数 count
+    private readonly object _locker = new ();
     private SortedDictionary<int, T> Circle { get; } = new(); //虚拟的圆环，对2的32方取模
 
     public void Dispose()
@@ -57,13 +58,16 @@ public class ConsistentHash<T> : IDisposable
     {
         if (node == null) return;
 
-        for (var i = 0; i < _replicate; i++)
+        lock (_locker)
         {
-            var hash = BetterHash(node.ToString() + i);
-            Circle[hash] = node;
-        }
+            for (var i = 0; i < _replicate; i++)
+            {
+                var hash = BetterHash(node.ToString() + i);
+                Circle[hash] = node;
+            }
 
-        if (updateKeyArray) _ayKeys = Circle.Keys.ToArray();
+            if (updateKeyArray) _ayKeys = Circle.Keys.ToArray();
+        }
     }
 
     /// <summary>
@@ -74,13 +78,16 @@ public class ConsistentHash<T> : IDisposable
     {
         if (node == null) return;
 
-        for (var i = 0; i < _replicate; i++)
+        lock (_locker)
         {
-            var hash = BetterHash(node.ToString() + i);
-            if (!Circle.Remove(hash)) throw new Exception("can not remove a node that not added");
-        }
+            for (var i = 0; i < _replicate; i++)
+            {
+                var hash = BetterHash(node.ToString() + i);
+                if (!Circle.Remove(hash)) throw new Exception("can not remove a node that not added");
+            }
 
-        _ayKeys = Circle.Keys.ToArray();
+            _ayKeys = Circle.Keys.ToArray();
+        }
     }
 
     private static int GetFirst(int[] ay, int val)
@@ -107,10 +114,13 @@ public class ConsistentHash<T> : IDisposable
 
     public T GetNode(string key)
     {
-        var hash = BetterHash(key);
-        var first = GetFirst(_ayKeys, hash);
+        lock (_locker)
+        {
+            var hash = BetterHash(key);
+            var first = GetFirst(_ayKeys, hash);
 
-        return Circle[_ayKeys[first]];
+            return Circle[_ayKeys[first]];
+        }
     }
 
     /// <summary>

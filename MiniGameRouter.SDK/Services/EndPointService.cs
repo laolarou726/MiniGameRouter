@@ -33,7 +33,7 @@ public class EndPointService : IEndPointService
 
     public Task<EndPointRecord?> GetEndPointAsync(long serviceId)
     {
-        return GetEndPointAsync(serviceId.ToString("N"));
+        return GetEndPointAsync(serviceId.ToString());
     }
 
     public async Task<EndPointRecord?> GetEndPointAsync(
