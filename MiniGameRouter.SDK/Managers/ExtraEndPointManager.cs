@@ -8,7 +8,7 @@ namespace MiniGameRouter.SDK.Managers;
 
 public class ExtraEndPointManager : IHostedService
 {
-    private readonly ConcurrentDictionary<Guid, byte> _endPoints = [];
+    private readonly ConcurrentDictionary<long, byte> _endPoints = [];
 
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger _logger;
@@ -21,12 +21,12 @@ public class ExtraEndPointManager : IHostedService
         _logger = logger;
     }
 
-    public void AddEndPoint(Guid id)
+    public void AddEndPoint(long id)
     {
         _endPoints.TryAdd(id, 0);
     }
 
-    public void RemoveEndPoint(Guid id)
+    public void RemoveEndPoint(long id)
     {
         _endPoints.TryRemove(id, out _);
     }

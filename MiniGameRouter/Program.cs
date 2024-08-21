@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.Services;
 using MiniGameRouter.Services.RoutingServices;
+using OnceMi.AspNetCore.IdGenerator;
 using Prometheus;
 using Prometheus.DotNetRuntime;
 using Prometheus.SystemMetrics;
@@ -24,6 +25,14 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
+
+// Setup Id Generator
+
+builder.Services.AddIdGenerator(options =>
+{
+    options.AppId = builder.Configuration.GetValue<ushort>("NodeId");
+    options.GeneratorOptions.SeqBitLength = 10;
+});
 
 // Setup Prometheus
 

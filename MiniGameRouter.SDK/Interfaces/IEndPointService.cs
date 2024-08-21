@@ -5,14 +5,14 @@ namespace MiniGameRouter.SDK.Interfaces;
 
 public interface IEndPointService
 {
-    Task<EndPointRecord?> GetEndPointAsync(Guid serviceId);
+    Task<EndPointRecord?> GetEndPointAsync(long serviceId);
 
     Task<EndPointRecord?> GetEndPointAsync(
         string serviceName,
         RoutingMode? routingMode = null,
         string? hashKey = null);
 
-    Task<Guid?> CreateEndPointAsync(
+    Task<long?> CreateEndPointAsync(
         string serviceName,
         string endPoint,
         uint weight = 1,
@@ -20,8 +20,8 @@ public interface IEndPointService
         bool addToExtraManager = true);
 
     Task<bool> EditEndPointAsync(
-        Guid id,
+        long id,
         EndPointMappingRequestModel reqModel);
 
-    Task<bool> DeleteEndPointAsync(Guid id);
+    Task<bool> DeleteEndPointAsync(long id);
 }

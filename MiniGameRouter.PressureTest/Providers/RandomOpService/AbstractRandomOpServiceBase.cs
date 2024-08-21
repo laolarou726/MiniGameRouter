@@ -17,7 +17,7 @@ public abstract class AbstractRandomOpServiceBase(
         configuration,
         logger)
 {
-    protected readonly ConcurrentQueue<(Guid, EndPointMappingRequestModel)> EndPoints = [];
+    protected readonly ConcurrentQueue<(long, EndPointMappingRequestModel)> EndPoints = [];
     protected readonly IEndPointService EndPointService = endPointService;
 
     protected override async Task PrepareAsync(CancellationToken stoppingToken)

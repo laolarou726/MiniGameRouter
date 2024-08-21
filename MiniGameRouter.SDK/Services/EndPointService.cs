@@ -31,7 +31,7 @@ public class EndPointService : IEndPointService
         _logger = logger;
     }
 
-    public Task<EndPointRecord?> GetEndPointAsync(Guid serviceId)
+    public Task<EndPointRecord?> GetEndPointAsync(long serviceId)
     {
         return GetEndPointAsync(serviceId.ToString("N"));
     }
@@ -78,7 +78,7 @@ public class EndPointService : IEndPointService
         return resModel;
     }
 
-    public async Task<Guid?> CreateEndPointAsync(
+    public async Task<long?> CreateEndPointAsync(
         string serviceName,
         string endPoint,
         uint weight = 1,
@@ -133,10 +133,10 @@ public class EndPointService : IEndPointService
     }
 
     public async Task<bool> EditEndPointAsync(
-        Guid id,
+        long id,
         EndPointMappingRequestModel reqModel)
     {
-        var uri = $"/EndPoint/edit/{id:N}";
+        var uri = $"/EndPoint/edit/{id}";
 
         using var req = new HttpRequestMessage(HttpMethod.Put, uri);
         req.Content = JsonContent.Create(reqModel);
@@ -154,9 +154,9 @@ public class EndPointService : IEndPointService
         return true;
     }
 
-    public async Task<bool> DeleteEndPointAsync(Guid id)
+    public async Task<bool> DeleteEndPointAsync(long id)
     {
-        var uri = $"/EndPoint/delete/{id:N}";
+        var uri = $"/EndPoint/delete/{id}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, uri);
         using var res = await _httpClient.SendAsync(req);

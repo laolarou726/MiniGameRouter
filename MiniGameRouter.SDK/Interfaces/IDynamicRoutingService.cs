@@ -4,11 +4,11 @@ namespace MiniGameRouter.SDK.Interfaces;
 
 public interface IDynamicRoutingService
 {
-    Task<DynamicRoutingRecord?> GetMappingAsync(Guid id);
+    Task<DynamicRoutingRecord?> GetMappingAsync(long id);
 
     Task<string?> GetMappingAsync(string rawString);
 
-    Task<Guid?> CreateMappingAsync(string matchPrefix, string targetEndPoint);
+    Task<long?> CreateMappingAsync(string matchPrefix, string targetEndPoint);
 
-    Task<bool> DeleteMappingAsync(Guid id);
+    Task<bool> DeleteMappingAsync(long id);
 }

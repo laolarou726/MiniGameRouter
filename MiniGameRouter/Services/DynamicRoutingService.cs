@@ -2,6 +2,7 @@
 using MiniGameRouter.Models;
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.Shared.Models;
+using OnceMi.AspNetCore.IdGenerator;
 
 namespace MiniGameRouter.Services;
 
@@ -28,13 +29,14 @@ public class DynamicRoutingService
         return match?.TargetEndPoint;
     }
 
-    public async Task<Guid?> TryAddMappingToDbAsync(DynamicRoutingMappingRequestModel model)
+    public async Task<long?> TryAddMappingToDbAsync(DynamicRoutingMappingRequestModel model)
     {
         if (string.IsNullOrEmpty(model.MatchPrefix) ||
             string.IsNullOrEmpty(model.TargetEndPoint)) return null;
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
+        var idGenerator = scope.ServiceProvider.GetRequiredService<IIdGeneratorService>();
 
         var anyExist = await context.DynamicRoutingMappings
             .AnyAsync(m => m.MatchPrefix == model.MatchPrefix);
@@ -50,6 +52,7 @@ public class DynamicRoutingService
 
         var mapping = new DynamicRoutingMappingModel
         {
+            Id = idGenerator.CreateId(),
             MatchPrefix = model.MatchPrefix,
             TargetEndPoint = model.TargetEndPoint
         };
@@ -60,12 +63,15 @@ public class DynamicRoutingService
         return mapping.Id;
     }
 
-    public async Task<bool> TryRemoveMappingAsync(Guid id)
+    public async Task<bool> TryRemoveMappingAsync(long id)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<DynamicRoutingMappingContext>();
 
-        var record = await context.DynamicRoutingMappings.FindAsync(id);
+        var record = await context.DynamicRoutingMappings
+            .AsNoTrackingWithIdentityResolution()
+            .Where(r => r.Id == id)
+            .FirstOrDefaultAsync();
 
         if (record == null) return false;
 

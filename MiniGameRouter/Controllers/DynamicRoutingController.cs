@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MiniGameRouter.Models.DB;
 using MiniGameRouter.Services;
 using MiniGameRouter.Shared.Models;
@@ -48,13 +49,16 @@ public sealed class DynamicRoutingController : Controller
         _logger = logger;
     }
 
-    [HttpGet("get/{id:guid}")]
+    [HttpGet("get/{id:long}")]
     public async Task<IActionResult> GetRoutingAsync(
-        [FromRoute] Guid id)
+        [FromRoute] long id)
     {
         using (DynamicRoutingGetDuration.WithLabels("by_id").NewTimer())
         {
-            var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings.FindAsync(id);
+            var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings
+                .AsNoTrackingWithIdentityResolution()
+                .Where(r => r.Id == id)
+                .FirstOrDefaultAsync();
 
             if (record == null)
             {
@@ -109,9 +113,9 @@ public sealed class DynamicRoutingController : Controller
         }
     }
 
-    [HttpDelete("delete/{id:guid}")]
+    [HttpDelete("delete/{id:long}")]
     public async Task<IActionResult> RemoveRoutingAsync(
-        [FromRoute] Guid id)
+        [FromRoute] long id)
     {
         using (DynamicRoutingDeleteDuration.NewTimer())
         {

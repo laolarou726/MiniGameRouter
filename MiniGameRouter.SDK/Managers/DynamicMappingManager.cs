@@ -8,7 +8,7 @@ namespace MiniGameRouter.SDK.Managers;
 
 public class DynamicMappingManager : IHostedService
 {
-    private readonly ConcurrentDictionary<Guid, byte> _mappings = [];
+    private readonly ConcurrentDictionary<long, byte> _mappings = [];
 
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ILogger _logger;
@@ -21,12 +21,12 @@ public class DynamicMappingManager : IHostedService
         _logger = logger;
     }
 
-    public void AddEndPoint(Guid id)
+    public void AddEndPoint(long id)
     {
         _mappings.TryAdd(id, 0);
     }
 
-    public void RemoveEndPoint(Guid id)
+    public void RemoveEndPoint(long id)
     {
         _mappings.TryRemove(id, out _);
     }

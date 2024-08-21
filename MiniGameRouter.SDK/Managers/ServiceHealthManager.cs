@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,7 @@ namespace MiniGameRouter.SDK.Managers;
 
 public class ServiceHealthManager : BackgroundService
 {
-    private readonly ConcurrentDictionary<Guid, EndPointRecord> _endPoints = [];
+    private readonly ConcurrentDictionary<long, EndPointRecord> _endPoints = [];
     private readonly object _locker = new();
     private readonly PriorityQueue<EndPointRecord, DateTime> _checkQueue = new ();
     private readonly ILogger _logger;
@@ -100,7 +99,7 @@ public class ServiceHealthManager : BackgroundService
         }
     }
 
-    public void RemoveEndPoint(Guid id)
+    public void RemoveEndPoint(long id)
     {
         _endPoints.TryRemove(id, out _);
     }

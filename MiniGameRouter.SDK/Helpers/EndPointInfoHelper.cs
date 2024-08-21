@@ -8,8 +8,9 @@ namespace MiniGameRouter.SDK.Helpers;
 
 public class EndPointInfoHelper
 {
-    private readonly bool _isGuid;
+    private readonly bool _isId;
     private readonly string _serviceName;
+    private readonly long _id;
 
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private string? _hashKey;
@@ -24,11 +25,11 @@ public class EndPointInfoHelper
     }
 
     public EndPointInfoHelper(
-        Guid serviceId,
+        long serviceId,
         IServiceScopeFactory serviceScopeFactory)
     {
-        _isGuid = true;
-        _serviceName = serviceId.ToString("N");
+        _isId = true;
+        _id = serviceId;
         _serviceScopeFactory = serviceScopeFactory;
     }
 
@@ -46,14 +47,14 @@ public class EndPointInfoHelper
 
     public async Task<EndPointRecord?> GetAsync()
     {
-        if (_isGuid && (_routingMode != null || !string.IsNullOrEmpty(_hashKey)))
+        if (_isId && (_routingMode != null || !string.IsNullOrEmpty(_hashKey)))
             throw new Exception("Routing mode and hash key are not supported for GUID service ID.");
 
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         var endPointService = scope.ServiceProvider.GetRequiredService<EndPointService>();
 
-        if (_isGuid)
-            return await endPointService.GetEndPointAsync(new Guid(_serviceName));
+        if (_isId)
+            return await endPointService.GetEndPointAsync(_id);
 
         var serverConfigProvider = scope.ServiceProvider.GetRequiredService<IServerConfigurationProvider>();
         var sessionHashIdProvider = scope.ServiceProvider.GetRequiredService<ISessionHashIdentityProvider>();

@@ -8,6 +8,7 @@ using MiniGameRouter.Models.DB;
 using MiniGameRouter.SDK.Models;
 using MiniGameRouter.Services.RoutingServices;
 using MiniGameRouter.Shared.Models;
+using OnceMi.AspNetCore.IdGenerator;
 using Prometheus;
 using HealthCheckService = MiniGameRouter.Services.HealthCheckService;
 
@@ -42,6 +43,7 @@ public sealed class EndPointController : Controller
         "Duration of deleting endpoints");
 
     private readonly IDistributedCache _cache;
+    private readonly IIdGeneratorService _idGeneratorService;
     private readonly IHostApplicationLifetime _applicationLifetime;
 
     private readonly EndPointMappingContext _endPointMappingContext;
@@ -58,6 +60,7 @@ public sealed class EndPointController : Controller
         NodeWeightedRouteService weightedRouteService,
         NodeHashRouteService hashRouteService,
         IDistributedCache cache,
+        IIdGeneratorService idGeneratorService,
         IHostApplicationLifetime applicationLifetime,
         ILogger<EndPointController> logger)
     {
@@ -68,6 +71,7 @@ public sealed class EndPointController : Controller
         _weightedRouteService = weightedRouteService;
         _hashRouteService = hashRouteService;
         _cache = cache;
+        _idGeneratorService = idGeneratorService;
         _applicationLifetime = applicationLifetime;
         _logger = logger;
     }
@@ -78,6 +82,7 @@ public sealed class EndPointController : Controller
         Func<IRoutingService, EndPointRecord?> getter)
     {
         var services = await _endPointMappingContext.EndPoints
+            .AsNoTrackingWithIdentityResolution()
             .Where(e => e.ServiceName.ToLower() == serviceName.ToLower())
             .Select(e => new EndPointRecord(
                 e.Id,
@@ -111,6 +116,7 @@ public sealed class EndPointController : Controller
     public async Task<IActionResult> ListAsync([FromRoute] int count)
     {
         var services = await _endPointMappingContext.EndPoints
+            .AsNoTrackingWithIdentityResolution()
             .Select(e => new EndPointRecord(
                 e.Id,
                 e.ServiceName,
@@ -129,6 +135,7 @@ public sealed class EndPointController : Controller
     public async Task<IActionResult> ListAllAsync()
     {
         var services = await _endPointMappingContext.EndPoints
+            .AsNoTrackingWithIdentityResolution()
             .Select(e => new EndPointRecord(
                 e.Id,
                 e.ServiceName,
@@ -142,8 +149,8 @@ public sealed class EndPointController : Controller
         return Ok(services);
     }
 
-    [HttpGet("get/{id:guid}")]
-    public async Task<IActionResult> GetAsync([FromRoute] Guid id)
+    [HttpGet("get/{id:long}")]
+    public async Task<IActionResult> GetAsync([FromRoute] long id)
     {
         using (EndPointGetDuration.WithLabels("id").NewTimer())
         {
@@ -153,7 +160,10 @@ public sealed class EndPointController : Controller
             if (cached is not null)
                 return await CheckHealthStatusAndReturn(cached);
 
-            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
+            var found = await _endPointMappingContext.EndPoints
+                .AsNoTrackingWithIdentityResolution()
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
 
@@ -283,6 +293,7 @@ public sealed class EndPointController : Controller
                 return BadRequest("Invalid model");
 
             var anyExists = await _endPointMappingContext.EndPoints
+                .AsNoTrackingWithIdentityResolution()
                 .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
                                e.TargetEndPoint == model.TargetEndPoint);
 
@@ -290,6 +301,7 @@ public sealed class EndPointController : Controller
 
             var record = new EndPointMappingModel
             {
+                Id = _idGeneratorService.CreateId(),
                 ServiceName = model.ServiceName,
                 Weight = model.Weight,
                 TargetEndPoint = model.TargetEndPoint,
@@ -330,14 +342,16 @@ public sealed class EndPointController : Controller
         }
     }
 
-    [HttpPut("edit/{id:guid}")]
+    [HttpPut("edit/{id:long}")]
     public async Task<IActionResult> EditAsync(
         [FromBody] EndPointMappingRequestModel model,
-        [FromRoute] Guid id)
+        [FromRoute] long id)
     {
         using (EndPointEditDuration.NewTimer())
         {
-            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
+            var found = await _endPointMappingContext.EndPoints
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
 
@@ -377,13 +391,16 @@ public sealed class EndPointController : Controller
         }
     }
 
-    [HttpDelete("delete/{id:guid}")]
+    [HttpDelete("delete/{id:long}")]
     public async Task<IActionResult> DeleteAsync(
-        [FromRoute] Guid id)
+        [FromRoute] long id)
     {
         using (EndPointDeleteDuration.NewTimer())
         {
-            var found = await _endPointMappingContext.EndPoints.FindAsync(id);
+            var found = await _endPointMappingContext.EndPoints
+                .AsNoTrackingWithIdentityResolution()
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
 

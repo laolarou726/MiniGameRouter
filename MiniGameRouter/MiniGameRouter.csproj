@@ -19,6 +19,7 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.8" />
 		<PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.1.0" />
+		<PackageReference Include="OnceMi.AspNetCore.IdGenerator" Version="1.0.6" />
 		<PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
 		<PackageReference Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
 		<PackageReference Include="prometheus-net.SystemMetrics" Version="3.1.0" />

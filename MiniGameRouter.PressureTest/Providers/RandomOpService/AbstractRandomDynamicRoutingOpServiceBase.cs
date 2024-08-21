@@ -17,7 +17,7 @@ public abstract class AbstractRandomDynamicRoutingOpServiceBase(
         logger)
 {
     protected readonly IDynamicRoutingService DynamicRoutingService = dynamicRoutingService;
-    protected readonly ConcurrentQueue<(Guid, string, string)> Prefixes = [];
+    protected readonly ConcurrentQueue<(long, string, string)> Prefixes = [];
 
     protected override async Task PrepareAsync(CancellationToken stoppingToken)
     {

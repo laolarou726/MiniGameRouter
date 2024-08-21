@@ -58,6 +58,7 @@ public sealed class HealthCheckController : Controller
                 if (string.IsNullOrEmpty(hasServiceCache) || hasServiceCache != "1")
                 {
                     var hasService = await _endPointMappingContext.EndPoints
+                        .AsNoTrackingWithIdentityResolution()
                         .AnyAsync(e => e.ServiceName.ToLower() == model.ServiceName.ToLower() &&
                                        e.TargetEndPoint == model.EndPoint);
 

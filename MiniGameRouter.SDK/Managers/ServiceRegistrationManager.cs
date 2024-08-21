@@ -7,7 +7,7 @@ namespace MiniGameRouter.SDK.Managers;
 public class ServiceRegistrationManager : IHostedService
 {
     private readonly IServerConfigurationProvider _configuration;
-    private readonly List<Guid> _endPointIds = [];
+    private readonly List<long> _endPointIds = [];
     private readonly IVersionService _versionService;
     private readonly IEndPointService _endPointService;
     private readonly ILogger _logger;

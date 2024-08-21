@@ -27,9 +27,9 @@ public class DynamicRoutingService : IDynamicRoutingService
         _logger = logger;
     }
 
-    public async Task<DynamicRoutingRecord?> GetMappingAsync(Guid id)
+    public async Task<DynamicRoutingRecord?> GetMappingAsync(long id)
     {
-        var url = $"/DynamicRouting/get/{id:N}";
+        var url = $"/DynamicRouting/get/{id}";
 
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         using var res = await _httpClient.SendAsync(req, _hostApplicationLifetime.ApplicationStopping);
@@ -63,7 +63,7 @@ public class DynamicRoutingService : IDynamicRoutingService
         return await res.Content.ReadAsStringAsync();
     }
 
-    public async Task<Guid?> CreateMappingAsync(string matchPrefix, string targetEndPoint)
+    public async Task<long?> CreateMappingAsync(string matchPrefix, string targetEndPoint)
     {
         const string url = "/DynamicRouting/create";
 
@@ -90,7 +90,7 @@ public class DynamicRoutingService : IDynamicRoutingService
 
         res.EnsureSuccessStatusCode();
 
-        var createdRecord = await res.Content.ReadFromJsonAsync<Guid>();
+        var createdRecord = await res.Content.ReadFromJsonAsync<long>();
 
         if (createdRecord == default)
         {
@@ -111,9 +111,9 @@ public class DynamicRoutingService : IDynamicRoutingService
         return createdRecord;
     }
 
-    public async Task<bool> DeleteMappingAsync(Guid id)
+    public async Task<bool> DeleteMappingAsync(long id)
     {
-        var url = $"/DynamicRouting/delete/{id:N}";
+        var url = $"/DynamicRouting/delete/{id}";
 
         using var req = new HttpRequestMessage(HttpMethod.Delete, url);
         using var res = await _httpClient.SendAsync(req);
