@@ -8,6 +8,7 @@ using Prometheus;
 using Prometheus.DotNetRuntime;
 using Prometheus.SystemMetrics;
 using Serilog;
+using Yitter.IdGenerator;
 
 const string redisInstanceName = "MiniGameRouter:";
 const string mongoDatabaseName = "MiniGameRouter";
@@ -31,7 +32,10 @@ builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
 builder.Services.AddIdGenerator(options =>
 {
     options.AppId = builder.Configuration.GetValue<ushort>("NodeId");
-    options.GeneratorOptions.SeqBitLength = 10;
+    options.GeneratorOptions = new IdGeneratorOptions
+    {
+        SeqBitLength = 10
+    };
 });
 
 // Setup Prometheus
