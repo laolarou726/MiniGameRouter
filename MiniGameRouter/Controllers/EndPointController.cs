@@ -85,7 +85,7 @@ public sealed class EndPointController : Controller
             .AsNoTrackingWithIdentityResolution()
             .Where(e => e.ServiceName.ToLower() == serviceName.ToLower())
             .Select(e => new EndPointRecord(
-                e.RecordId,
+                e.Id,
                 e.ServiceName,
                 e.TargetEndPoint,
                 e.Weight ?? 0,
@@ -118,7 +118,7 @@ public sealed class EndPointController : Controller
         var services = await _endPointMappingContext.EndPoints
             .AsNoTrackingWithIdentityResolution()
             .Select(e => new EndPointRecord(
-                e.RecordId,
+                e.Id,
                 e.ServiceName,
                 e.TargetEndPoint,
                 e.Weight ?? 0,
@@ -137,7 +137,7 @@ public sealed class EndPointController : Controller
         var services = await _endPointMappingContext.EndPoints
             .AsNoTrackingWithIdentityResolution()
             .Select(e => new EndPointRecord(
-                e.RecordId,
+                e.Id,
                 e.ServiceName,
                 e.TargetEndPoint,
                 e.Weight ?? 0,
@@ -162,13 +162,13 @@ public sealed class EndPointController : Controller
 
             var found = await _endPointMappingContext.EndPoints
                 .AsNoTrackingWithIdentityResolution()
-                .Where(e => e.RecordId == id)
+                .Where(e => e.Id == id)
                 .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
 
             var record = new EndPointRecord(
-                found.RecordId,
+                found.Id,
                 found.ServiceName,
                 found.TargetEndPoint,
                 found.Weight ?? 0,
@@ -181,7 +181,7 @@ public sealed class EndPointController : Controller
             });
 
             _logger.LogInformation(
-                "Client [{Address}] got mapping using ID [{RecordId}]",
+                "Client [{Address}] got mapping using ID [{Id}]",
                 Request.HttpContext.Connection.RemoteIpAddress,
                 idStr);
 
@@ -301,7 +301,7 @@ public sealed class EndPointController : Controller
 
             var record = new EndPointMappingModel
             {
-                RecordId = _idGeneratorService.CreateId(),
+                Id = _idGeneratorService.CreateId(),
                 ServiceName = model.ServiceName,
                 Weight = model.Weight,
                 TargetEndPoint = model.TargetEndPoint,
@@ -331,7 +331,7 @@ public sealed class EndPointController : Controller
             EndPointCounter.Inc();
 
             var result = new EndPointRecord(
-                record.RecordId,
+                record.Id,
                 record.ServiceName,
                 record.TargetEndPoint,
                 record.Weight ?? 1,
@@ -350,7 +350,7 @@ public sealed class EndPointController : Controller
         using (EndPointEditDuration.NewTimer())
         {
             var found = await _endPointMappingContext.EndPoints
-                .Where(e => e.RecordId == id)
+                .Where(e => e.Id == id)
                 .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
@@ -363,7 +363,7 @@ public sealed class EndPointController : Controller
             found.TimeoutInMilliseconds = model.TimeoutInMilliseconds;
 
             var record = new EndPointRecord(
-                found.RecordId,
+                found.Id,
                 found.ServiceName,
                 found.TargetEndPoint,
                 found.Weight ?? 0,
@@ -399,13 +399,13 @@ public sealed class EndPointController : Controller
         {
             var found = await _endPointMappingContext.EndPoints
                 .AsNoTrackingWithIdentityResolution()
-                .Where(e => e.RecordId == id)
+                .Where(e => e.Id == id)
                 .FirstOrDefaultAsync();
 
             if (found == null) return NotFound();
 
             var record = new EndPointRecord(
-                found.RecordId,
+                found.Id,
                 found.ServiceName,
                 found.TargetEndPoint,
                 found.Weight ?? 0,

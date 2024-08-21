@@ -4,7 +4,7 @@ namespace MiniGameRouter.Models;
 
 public class EndPointMappingModel
 {
-    public required long RecordId { get; set; }
+    [Key] public required long Id { get; set; }
 
     [MaxLength(256)] public required string ServiceName { get; set; }
 

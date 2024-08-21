@@ -52,7 +52,7 @@ public class DynamicRoutingService
 
         var mapping = new DynamicRoutingMappingModel
         {
-            RecordId = idGenerator.CreateId(),
+            Id = idGenerator.CreateId(),
             MatchPrefix = model.MatchPrefix,
             TargetEndPoint = model.TargetEndPoint
         };
@@ -60,7 +60,7 @@ public class DynamicRoutingService
         await context.DynamicRoutingMappings.AddAsync(mapping);
         await context.SaveChangesAsync();
 
-        return mapping.RecordId;
+        return mapping.Id;
     }
 
     public async Task<bool> TryRemoveMappingAsync(long id)
@@ -70,7 +70,7 @@ public class DynamicRoutingService
 
         var record = await context.DynamicRoutingMappings
             .AsNoTrackingWithIdentityResolution()
-            .Where(r => r.RecordId == id)
+            .Where(r => r.Id == id)
             .FirstOrDefaultAsync();
 
         if (record == null) return false;

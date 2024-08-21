@@ -27,7 +27,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
 
-// Setup RecordId Generator
+// Setup Id Generator
 
 builder.Services.AddIdGenerator(options =>
 {

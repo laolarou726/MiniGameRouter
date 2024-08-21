@@ -57,7 +57,7 @@ public sealed class DynamicRoutingController : Controller
         {
             var record = await _dynamicRoutingMappingContext.DynamicRoutingMappings
                 .AsNoTrackingWithIdentityResolution()
-                .Where(r => r.RecordId == id)
+                .Where(r => r.Id == id)
                 .FirstOrDefaultAsync();
 
             if (record == null)
@@ -69,7 +69,7 @@ public sealed class DynamicRoutingController : Controller
             }
 
             var result = new DynamicRoutingRecord(
-                record.RecordId,
+                record.Id,
                 record.MatchPrefix,
                 record.TargetEndPoint);
 
