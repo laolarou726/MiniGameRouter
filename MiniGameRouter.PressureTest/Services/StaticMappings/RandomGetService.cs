@@ -90,7 +90,7 @@ public class RandomGetService(
                 continue;
             }
 
-            Logger.LogInformation("Get endpoint [{endPoint}] using getting mode [{mode}].", record.Id, caseNum);
+            Logger.LogInformation("Get endpoint [{endPoint}] using getting mode [{mode}].", record.RecordId, caseNum);
         }
     }
 }

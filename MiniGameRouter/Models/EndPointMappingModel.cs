@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson;
 
 namespace MiniGameRouter.Models;
 
 public class EndPointMappingModel
 {
-    [Key] public required long Id { get; set; }
+    public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+    public required long RecordId { get; set; }
 
     [MaxLength(256)] public required string ServiceName { get; set; }
 

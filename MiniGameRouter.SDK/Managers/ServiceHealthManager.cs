@@ -50,11 +50,11 @@ public class ServiceHealthManager : BackgroundService
                 continue;
             }
 
-            if (!_endPoints.ContainsKey(endPoint.Id))
+            if (!_endPoints.ContainsKey(endPoint.RecordId))
             {
                 _logger.LogWarning(
                     "EndPoint with id [{id}] not found.",
-                    endPoint.Id);
+                    endPoint.RecordId);
 
                 continue;
             }
@@ -91,7 +91,7 @@ public class ServiceHealthManager : BackgroundService
 
     public void AddOrUpdateEndPoint(EndPointRecord record)
     {
-        _endPoints.AddOrUpdate(record.Id, record, (_, _) => record);
+        _endPoints.AddOrUpdate(record.RecordId, record, (_, _) => record);
 
         lock (_locker)
         {

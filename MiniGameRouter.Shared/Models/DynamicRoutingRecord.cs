@@ -1,3 +1,3 @@
 ﻿namespace MiniGameRouter.Shared.Models;
 
-public record DynamicRoutingRecord(long Id, string MatchPrefix, string TargetEndPoint);
+public record DynamicRoutingRecord(long RecordId, string MatchPrefix, string TargetEndPoint);

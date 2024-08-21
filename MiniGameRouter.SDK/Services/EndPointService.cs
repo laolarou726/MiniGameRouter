@@ -126,10 +126,10 @@ public class EndPointService : IEndPointService
         }
 
         if (addToExtraManager)
-            _extraEndPointManager.AddEndPoint(createdRecord.Id);
+            _extraEndPointManager.AddEndPoint(createdRecord.RecordId);
         _healthManager.AddOrUpdateEndPoint(createdRecord);
 
-        return createdRecord.Id;
+        return createdRecord.RecordId;
     }
 
     public async Task<bool> EditEndPointAsync(
@@ -145,7 +145,7 @@ public class EndPointService : IEndPointService
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
-            _logger.LogWarning("EndPoint {Id} not found.", id);
+            _logger.LogWarning("EndPoint {RecordId} not found.", id);
             return false;
         }
 
@@ -163,7 +163,7 @@ public class EndPointService : IEndPointService
 
         if (res is { IsSuccessStatusCode: false, StatusCode: HttpStatusCode.NotFound })
         {
-            _logger.LogWarning("EndPoint {Id} not found.", id);
+            _logger.LogWarning("EndPoint {RecordId} not found.", id);
             return false;
         }
 
